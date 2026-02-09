@@ -1,6 +1,6 @@
 # tests/test_pagination.py
 # -------------------------
-# Tests the pagination utility. Pagination is tricky because we need
+# I test the pagination utility. Pagination is tricky because we need
 # to handle multi-page responses, detect infinite loops, and merge results.
 
 import pytest
@@ -33,10 +33,10 @@ class TestPaginateCLICommand:
                 cmd.extend(["--token", token])
             return cmd
         
-        with patch('subprocess.run', return_value=mock_result):
+        with patch('bashcloud.utils.pagination.run_cli_command', return_value=mock_result):
             results = paginate_cli_command(
                 build_command=build_cmd,
-                result_key="Items",
+                result_extractor="Items",  # I changed from result_key to result_extractor
             )
         
         assert len(results) == 2
@@ -70,10 +70,10 @@ class TestPaginateCLICommand:
         def build_cmd(token):
             return ["test", "command"]
         
-        with patch('subprocess.run', side_effect=mock_run):
+        with patch('bashcloud.utils.pagination.run_cli_command', side_effect=mock_run):
             results = paginate_cli_command(
                 build_command=build_cmd,
-                result_key="Items",
+                result_extractor="Items",  # I changed from result_key to result_extractor
             )
         
         assert len(results) == 3
@@ -82,15 +82,6 @@ class TestPaginateCLICommand:
     def test_max_pages_exceeded(self):
         """Should raise PaginationError when max pages exceeded."""
         # Response always has a next token = infinite loop
-        response = {
-            "Items": [{"id": 1}],
-            "NextPageToken": "infinite"
-        }
-        
-        mock_result = Mock()
-        mock_result.returncode = 0
-        mock_result.stdout = json.dumps(response)
-        
         # But we change the token each time to avoid duplicate detection
         page_num = [0]
         def mock_run(*args, **kwargs):
@@ -104,11 +95,11 @@ class TestPaginateCLICommand:
         def build_cmd(token):
             return ["test", "command"]
         
-        with patch('subprocess.run', side_effect=mock_run):
+        with patch('bashcloud.utils.pagination.run_cli_command', side_effect=mock_run):
             with pytest.raises(PaginationError) as exc_info:
                 paginate_cli_command(
                     build_command=build_cmd,
-                    result_key="Items",
+                    result_extractor="Items",  # I changed from result_key to result_extractor
                     max_pages=5,
                 )
             
@@ -133,11 +124,11 @@ class TestPaginateCLICommand:
         def build_cmd(token):
             return ["test", "command"]
         
-        with patch('subprocess.run', side_effect=mock_run):
+        with patch('bashcloud.utils.pagination.run_cli_command', side_effect=mock_run):
             with pytest.raises(PaginationError) as exc_info:
                 paginate_cli_command(
                     build_command=build_cmd,
-                    result_key="Items",
+                    result_extractor="Items",  # I changed from result_key to result_extractor
                 )
             
             assert "duplicate" in str(exc_info.value).lower()
@@ -158,7 +149,7 @@ class TestPaginateAWSCostExplorer:
         mock_result.returncode = 0
         mock_result.stdout = json.dumps(response)
         
-        with patch('subprocess.run', return_value=mock_result):
+        with patch('bashcloud.utils.pagination.run_cli_command', return_value=mock_result):
             result = paginate_aws_cost_explorer(["aws", "ce", "get-cost-and-usage"])
         
         assert "ResultsByTime" in result
@@ -184,7 +175,7 @@ class TestPaginateAWSCostExplorer:
             call_count[0] += 1
             return result
         
-        with patch('subprocess.run', side_effect=mock_run):
+        with patch('bashcloud.utils.pagination.run_cli_command', side_effect=mock_run):
             result = paginate_aws_cost_explorer(["aws", "ce", "get-cost-and-usage"])
         
         # Both time periods should be merged

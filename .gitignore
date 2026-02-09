@@ -77,7 +77,7 @@ coverage.xml
 .pytype/
 
 # ----------------------------
-# Ruff / Black
+# Linting / formatting cache
 # ----------------------------
 .ruff_cache/
 
@@ -89,13 +89,13 @@ logs/
 debug.log
 
 # ----------------------------
-# Textual / TUI runtime cache
+# TUI runtime cache
 # ----------------------------
 .textual/
 .textual_cache/
 
 # ----------------------------
-# BashCloud local runtime data
+# Local runtime data
 # ----------------------------
 .bashcloud/
 cache/
@@ -117,30 +117,26 @@ cache/
 *.sublime-project
 
 # ----------------------------
-# OS junk
+# OS files
 # ----------------------------
 .DS_Store
 Thumbs.db
 desktop.ini
 
 # ----------------------------
-# Backup / Temp
+# Backup / Temp / Draft
 # ----------------------------
 *.bak
 *.tmp
 *.swp
 *~
+*.local
+*.scratch
+*.draft
+/private/
+.local/
 
 # ----------------------------
-# Custom Exclusions (3Dev)
+# Publishing
 # ----------------------------
-
-# Single file backup hack
-JugaadBKP_3DevHax.py
-
-# Entire backup folder
-.JugaadBKP/
-
-# PyPI publishing
 .pypirc
-

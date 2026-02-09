@@ -1,6 +1,6 @@
 # tests/test_negative_cases.py
 # -----------------------------
-# Consolidated all negative test cases. These test error handling,
+# I consolidated all negative test cases. These test error handling,
 # validation failures, and edge cases that should fail gracefully.
 
 import pytest
@@ -149,11 +149,11 @@ class TestPaginationFailures:
             page_num[0] += 1
             return result
         
-        with patch('subprocess.run', side_effect=mock_run):
+        with patch('bashcloud.utils.pagination.run_cli_command', side_effect=mock_run):
             with pytest.raises(PaginationError) as exc_info:
                 paginate_cli_command(
                     build_command=lambda t: ["cmd"],
-                    result_key="Items",
+                    result_extractor="Items",  # I use result_extractor now
                     max_pages=3,
                 )
             assert "maximum" in str(exc_info.value).lower()
@@ -174,10 +174,10 @@ class TestPaginationFailures:
             call_count[0] += 1
             return result
         
-        with patch('subprocess.run', side_effect=mock_run):
+        with patch('bashcloud.utils.pagination.run_cli_command', side_effect=mock_run):
             results = paginate_cli_command(
                 build_command=lambda t: ["cmd"],
-                result_key="Items",
+                result_extractor="Items",  # I use result_extractor now
             )
             # Should collect all non-empty results
             assert len(results) == 2
@@ -197,11 +197,11 @@ class TestPaginationFailures:
             call_count[0] += 1
             return result
         
-        with patch('subprocess.run', side_effect=mock_run):
+        with patch('bashcloud.utils.pagination.run_cli_command', side_effect=mock_run):
             with pytest.raises(PaginationError) as exc_info:
                 paginate_cli_command(
                     build_command=lambda t: ["cmd"],
-                    result_key="Items",
+                    result_extractor="Items",  # I use result_extractor now
                 )
             assert "duplicate" in str(exc_info.value).lower()
     
@@ -220,10 +220,10 @@ class TestPaginationFailures:
             call_count[0] += 1
             return result
         
-        with patch('subprocess.run', side_effect=mock_run):
+        with patch('bashcloud.utils.pagination.run_cli_command', side_effect=mock_run):
             results = paginate_cli_command(
                 build_command=lambda t: ["cmd"],
-                result_key="Items",
+                result_extractor="Items",  # I use result_extractor now
             )
             # Should get first page, second page has no matching key
             assert len(results) == 1
@@ -237,11 +237,11 @@ class TestPaginationFailures:
             result.stderr = "API Error"
             return result
         
-        with patch('subprocess.run', side_effect=mock_run):
+        with patch('bashcloud.utils.pagination.run_cli_command', side_effect=mock_run):
             with pytest.raises(BashCloudError):
                 paginate_cli_command(
                     build_command=lambda t: ["cmd"],
-                    result_key="Items",
+                    result_extractor="Items",  # I use result_extractor now
                 )
 
 

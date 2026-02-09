@@ -1,11 +1,11 @@
 # bashcloud/dashboard/views/cost_view.py
 # ---------------------------------------
-# the cost dashboard view This combines the filter
+# I implement the cost dashboard view here. This combines the filter
 # panel with the cost table for a complete cost analysis experience.
 
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
-from textual.widgets import Static
+from textual.widgets import Static, LoadingIndicator
 from textual.worker import Worker, get_current_worker
 
 from bashcloud.dashboard.widgets.cost_table import CostTable
@@ -20,7 +20,7 @@ class CostView(Container):
     
     Layout:
     - Left: Filter panel
-    - Right: Cost results table
+    - Right: Cost results table (with loading indicator)
     - Bottom: Status bar
     """
     
@@ -53,7 +53,22 @@ class CostView(Container):
         text-align: center;
         text-style: bold;
     }
+    
+    CostView .loading-container {
+        width: 100%;
+        height: 100%;
+        align: center middle;
+    }
+    
+    CostView LoadingIndicator {
+        width: auto;
+        height: auto;
+    }
     """
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._is_loading = False
     
     def compose(self) -> ComposeResult:
         """Build the cost view layout."""
@@ -65,8 +80,26 @@ class CostView(Container):
             
             with Vertical(classes="results-container"):
                 yield CostTable(id="cost_table")
+                yield LoadingIndicator(id="loading_indicator")
         
         yield StatusBar(id="status_bar")
+    
+    def on_mount(self) -> None:
+        """Hide loading indicator on mount."""
+        self._set_loading(False)
+    
+    def _set_loading(self, loading: bool) -> None:
+        """Toggle loading indicator visibility."""
+        self._is_loading = loading
+        loading_indicator = self.query_one("#loading_indicator", LoadingIndicator)
+        cost_table = self.query_one("#cost_table", CostTable)
+        
+        if loading:
+            loading_indicator.display = True
+            cost_table.display = False
+        else:
+            loading_indicator.display = False
+            cost_table.display = True
     
     def on_filter_panel_query_requested(
         self,
@@ -93,12 +126,21 @@ class CostView(Container):
         status_bar = self.query_one("#status_bar", StatusBar)
         status_bar.set_status("Fetching cost data...")
         
-        # Run in background worker
+        # I show loading indicator while fetching
+        self._set_loading(True)
+        
+        # Run in background worker (exclusive cancels previous)
         self.run_worker(
             self._fetch_costs(provider, start_date, end_date, breakdown, threshold),
             name="fetch_costs",
             exclusive=True,
         )
+    
+    def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
+        """Handle worker state changes for loading indicator."""
+        if event.worker.name == "fetch_costs":
+            if event.worker.is_finished:
+                self._set_loading(False)
     
     async def _fetch_costs(
         self,

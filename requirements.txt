@@ -1,0 +1,12 @@
+# requirements.txt
+# ----------------
+# Keeps this file for convenience even though pyproject.toml has the deps.
+# Some folks prefer pip install -r requirements.txt for quick setup.
+# The versions here match what is in pyproject.toml.
+
+click>=8.1
+rich>=10.9
+python-dotenv>=1.0
+toml>=0.10
+pytest>=7.0
+pytest-cov>=4.0

@@ -1,0 +1,81 @@
+# pyproject.toml
+# ---------------
+# pyproject.toml instead of setup.py used because it is the modern standard
+# for Python packaging. This file declares all metadata, dependencies, and
+# build configuration in one place. When someone runs pip install -e . this
+# file tells pip how to build and install the bashcloud package.
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bashcloud"
+version = "0.1.0"
+description = "Terminal-first multi-cloud CLI for cloud practitioners who prefer shell workflows over GUIs"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+authors = [
+    {name = "BashCloud Contributors"}
+]
+keywords = ["cloud", "cli", "aws", "azure", "gcp", "terminal", "devops"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Systems Administration",
+]
+
+dependencies = [
+    "click>=8.1",
+    "rich>=10.9",
+    "python-dotenv>=1.0",
+    "toml>=0.10",
+    "textual>=0.50",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "black>=23.0",
+    "mypy>=1.0",
+]
+
+[project.scripts]
+bashcloud = "bashcloud.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/bashcloud/bashcloud"
+Documentation = "https://github.com/bashcloud/bashcloud#readme"
+Repository = "https://github.com/bashcloud/bashcloud"
+Issues = "https://github.com/bashcloud/bashcloud/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["bashcloud*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+
+[tool.black]
+line-length = 100
+target-version = ["py38", "py39", "py310", "py311", "py312"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true

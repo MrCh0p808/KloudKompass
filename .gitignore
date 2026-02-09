@@ -141,3 +141,6 @@ JugaadBKP_3DevHax.py
 # Entire backup folder
 .JugaadBKP/
 
+# PyPI publishing
+.pypirc
+

@@ -109,3 +109,55 @@ def warning(message: str, *args, **kwargs) -> None:
 def error(message: str, *args, **kwargs) -> None:
     """Log an error message."""
     get_logger().error(message, *args, **kwargs)
+
+
+# ============================================================================
+# Observability Helpers
+# ============================================================================
+
+def log_query_start(provider: str, start_date: str, end_date: str) -> None:
+    """
+    Log the start of a cost query.
+    
+    I use this to track what queries are being made for debugging.
+    """
+    debug(f"Query start: provider={provider}, range={start_date} to {end_date}")
+
+
+def log_query_complete(
+    duration_seconds: float,
+    page_count: int,
+    record_count: int,
+    cache_hit: bool = False,
+) -> None:
+    """
+    Log query completion with timing info.
+    
+    I log this at debug level so it does not spam normal output.
+    """
+    cache_status = "cache hit" if cache_hit else "API call"
+    debug(
+        f"Query complete: {duration_seconds:.2f}s, "
+        f"{page_count} pages, {record_count} records ({cache_status})"
+    )
+
+
+def log_threshold_applied(
+    threshold: float,
+    before_count: int,
+    after_count: int,
+) -> None:
+    """
+    Log when threshold filtering is applied.
+    
+    I track how many records were filtered so users can tune thresholds.
+    """
+    filtered = before_count - after_count
+    debug(f"Threshold {threshold}: filtered {filtered} of {before_count} records")
+
+
+def log_cache_status(key: str, hit: bool) -> None:
+    """Log cache hit or miss."""
+    status = "hit" if hit else "miss"
+    debug(f"Cache {status}: {key}")
+

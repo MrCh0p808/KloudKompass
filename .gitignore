@@ -1,0 +1,143 @@
+# ----------------------------
+# Python bytecode
+# ----------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ----------------------------
+# C extensions
+# ----------------------------
+*.so
+
+# ----------------------------
+# Distribution / packaging
+# ----------------------------
+.Python
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ----------------------------
+# Virtual environments
+# ----------------------------
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ----------------------------
+# PyInstaller
+# ----------------------------
+*.manifest
+*.spec
+
+# ----------------------------
+# Installer logs
+# ----------------------------
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ----------------------------
+# Unit test / coverage reports
+# ----------------------------
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# ----------------------------
+# Type checking
+# ----------------------------
+.mypy_cache/
+.pyre/
+.pytype/
+
+# ----------------------------
+# Ruff / Black
+# ----------------------------
+.ruff_cache/
+
+# ----------------------------
+# Logs
+# ----------------------------
+*.log
+logs/
+debug.log
+
+# ----------------------------
+# Textual / TUI runtime cache
+# ----------------------------
+.textual/
+.textual_cache/
+
+# ----------------------------
+# BashCloud local runtime data
+# ----------------------------
+.bashcloud/
+cache/
+*.cache
+
+# ----------------------------
+# Environment variables
+# ----------------------------
+.env
+.env.*
+*.env
+
+# ----------------------------
+# IDE / Editor
+# ----------------------------
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# ----------------------------
+# OS junk
+# ----------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ----------------------------
+# Backup / Temp
+# ----------------------------
+*.bak
+*.tmp
+*.swp
+*~
+
+# ----------------------------
+# Custom Exclusions (3Dev)
+# ----------------------------
+
+# Single file backup hack
+JugaadBKP_3DevHax.py
+
+# Entire backup folder
+.JugaadBKP/
+

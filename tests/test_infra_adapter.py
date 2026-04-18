@@ -7,8 +7,8 @@ import pytest
 import json
 from unittest.mock import patch, Mock
 
-from bashcloud.infra.cli_adapter import CLIAdapter, CLIResult
-from bashcloud.core.exceptions import BashCloudError, ParsingError
+from kloudkompass.infra.cli_adapter import CLIAdapter, CLIResult
+from kloudkompass.core.exceptions import KloudKompassError, ParsingError
 
 
 class TestCLIResult:
@@ -98,7 +98,7 @@ class TestCLIAdapter:
         mock_result.stderr = "error"
         
         with patch('subprocess.run', return_value=mock_result):
-            with pytest.raises(BashCloudError):
+            with pytest.raises(KloudKompassError):
                 adapter.run(["args"], check=True)
     
     def test_run_json_returns_dict(self):

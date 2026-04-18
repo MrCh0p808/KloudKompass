@@ -1,15 +1,18 @@
 # tests/test_tui_session.py
 # --------------------------
-# Tests the TUI session management. These tests verify that session
-# state persists correctly across screen navigation.
+# © 2026 TTox.Tech. Licensed under MIT.
+# Kloud Kompass is open-source software.
+#
+# Tests the TUI session management. Updated to use immutable pattern
+# per Master Brief session immutability requirement.
 
 import pytest
 
-from bashcloud.tui.session import SessionState, get_session, reset_session
+from kloudkompass.tui.session import SessionState, get_session, reset_session, update_session
 
 
 class TestSessionState:
-    """Tests for SessionState dataclass."""
+    """Tests for SessionState frozen dataclass."""
     
     def test_default_values(self):
         """Session should have None defaults."""
@@ -19,55 +22,58 @@ class TestSessionState:
         assert session.end_date is None
         assert session.breakdown is None
     
-    def test_store_provider(self):
-        """Should store provider selection."""
-        session = SessionState()
-        session.provider = "aws"
+    def test_create_with_provider(self):
+        """Should create session with provider."""
+        session = SessionState(provider="aws")
         assert session.provider == "aws"
     
-    def test_store_dates(self):
-        """Should store date range."""
-        session = SessionState()
-        session.start_date = "2024-01-01"
-        session.end_date = "2024-02-01"
+    def test_create_with_dates(self):
+        """Should create session with date range."""
+        session = SessionState(start_date="2024-01-01", end_date="2024-02-01")
         assert session.start_date == "2024-01-01"
         assert session.end_date == "2024-02-01"
     
     def test_reset_cost_options(self):
-        """reset_cost_options should clear cost-related fields."""
-        session = SessionState()
-        session.start_date = "2024-01-01"
-        session.end_date = "2024-02-01"
-        session.breakdown = "service"
-        session.threshold = 5.0
+        """reset_cost_options should return new session with cleared cost fields."""
+        session = SessionState(
+            provider="aws",
+            start_date="2024-01-01",
+            end_date="2024-02-01",
+            breakdown="service",
+            threshold=5.0,
+        )
         
-        session.reset_cost_options()
+        reset = session.reset_cost_options()
         
-        assert session.start_date is None
-        assert session.end_date is None
-        assert session.breakdown is None
-        assert session.threshold is None
+        # Original unchanged
+        assert session.start_date == "2024-01-01"
+        # Reset has cost options cleared but provider preserved
+        assert reset.provider == "aws"
+        assert reset.start_date is None
+        assert reset.end_date is None
+        assert reset.breakdown is None
+        assert reset.threshold is None
     
-    def test_reset_all_clears_everything(self):
-        """reset_all should clear all session state."""
-        session = SessionState()
-        session.provider = "aws"
-        session.profile = "prod"
-        session.start_date = "2024-01-01"
-        session.data["custom"] = "value"
+    def test_reset_all_returns_new_session(self):
+        """reset_all should return new session with defaults."""
+        session = SessionState(
+            provider="aws",
+            profile="prod",
+            start_date="2024-01-01",
+            debug_mode=True,
+        )
         
-        session.reset_all()
+        reset = session.reset_all()
         
-        assert session.provider is None
-        assert session.profile is None
-        assert session.start_date is None
-        assert len(session.data) == 0
+        assert reset.provider is None
+        assert reset.profile is None
+        assert reset.start_date is None
+        # debug_mode is preserved
+        assert reset.debug_mode is True
     
     def test_to_dict(self):
         """to_dict should return serializable dictionary."""
-        session = SessionState()
-        session.provider = "aws"
-        session.start_date = "2024-01-01"
+        session = SessionState(provider="aws", start_date="2024-01-01")
         
         d = session.to_dict()
         
@@ -88,9 +94,11 @@ class TestSessionSingleton:
     
     def test_reset_session_creates_new_instance(self):
         """reset_session should create a fresh session."""
-        s1 = get_session()
-        s1.provider = "aws"
+        # Set up initial state
+        initial = SessionState(provider="aws")
+        update_session(initial)
         
+        # Reset should create new session
         s2 = reset_session()
         
         assert s2.provider is None

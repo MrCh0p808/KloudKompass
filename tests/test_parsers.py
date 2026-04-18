@@ -6,7 +6,7 @@
 import pytest
 from datetime import date
 
-from bashcloud.utils.parsers import (
+from kloudkompass.utils.parsers import (
     validate_date_format,
     validate_date_range,
     parse_iso_date,
@@ -14,7 +14,7 @@ from bashcloud.utils.parsers import (
     parse_aws_time_period,
     safe_get_nested,
 )
-from bashcloud.core.exceptions import DateRangeError
+from kloudkompass.core.exceptions import DateRangeError
 
 
 class TestValidateDateFormat:

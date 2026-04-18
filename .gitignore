@@ -95,8 +95,20 @@ debug.log
 .textual_cache/
 
 # ----------------------------
-# BashCloud local runtime data
+# Linux Packaging
 # ----------------------------
+*.deb
+*.rpm
+debian/kloudkompass/
+debian/.debhelper/
+debian/files
+debian/kloudkompass.substvars
+debian/debhelper-build-stamp
+
+# ----------------------------
+# KloudKompass local runtime data
+# ----------------------------
+.kloudkompass/
 .bashcloud/
 cache/
 *.cache

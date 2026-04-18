@@ -1,0 +1,32 @@
+Source: kloudkompass
+Section: python
+Priority: optional
+Maintainer: TTox.Tech <contact@ttox.tech>
+Build-Depends: debhelper-compat (= 13),
+               dh-python,
+               python3-all,
+               python3-setuptools,
+               python3-click,
+               python3-rich,
+               python3-toml,
+               python3-dotenv,
+               python3-textual
+Standards-Version: 4.6.2
+Homepage: https://github.com/MrCh0p808/KloudKompass
+
+Package: kloudkompass
+Architecture: all
+Depends: ${python3:Depends}, ${misc:Depends},
+         python3-click (>= 8.1),
+         python3-rich (>= 10.9),
+         python3-toml (>= 0.10.2),
+         python3-dotenv (>= 1.0),
+         python3-textual (>= 0.50)
+Recommends: python3-boto3
+Description: Terminal-first multi-cloud CLI for cloud practitioners
+ Kloud Kompass delivers interactive, human-friendly access to AWS
+ services across cost tracking, compute inventory, networking,
+ storage, IAM, databases, and security auditing.
+ .
+ Built for terminal practitioners who prefer shell workflows over GUIs,
+ it provides a blazingly fast TUI and a feature-rich dashboard.

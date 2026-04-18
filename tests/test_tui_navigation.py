@@ -5,8 +5,8 @@
 
 import pytest
 
-from bashcloud.tui.navigation import Navigator, get_navigator, reset_navigator
-from bashcloud.tui.screens import Screen
+from kloudkompass.tui.navigation import Navigator, get_navigator, reset_navigator
+from kloudkompass.tui.screens import Screen
 
 
 class MockScreen(Screen):
@@ -16,7 +16,8 @@ class MockScreen(Screen):
         super().__init__()
         self.name = name
     
-    def display(self):
+    def render(self):
+        """Required by lifecycle contract."""
         pass
     
     def handle_input(self):

@@ -7,11 +7,11 @@ import pytest
 import json
 from unittest.mock import patch, Mock, call
 
-from bashcloud.utils.pagination import (
+from kloudkompass.utils.pagination import (
     paginate_cli_command,
     paginate_aws_cost_explorer,
 )
-from bashcloud.core.exceptions import PaginationError
+from kloudkompass.core.exceptions import PaginationError
 
 
 class TestPaginateCLICommand:

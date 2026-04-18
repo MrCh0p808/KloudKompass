@@ -8,8 +8,8 @@ import json
 from unittest.mock import patch, Mock
 import subprocess
 
-from bashcloud.core.exceptions import (
-    BashCloudError,
+from kloudkompass.core.exceptions import (
+    KloudKompassError,
     CLIUnavailableError,
     CredentialError,
     DateRangeError,
@@ -17,11 +17,11 @@ from bashcloud.core.exceptions import (
     ParsingError,
     ConfigurationError,
 )
-from bashcloud.utils.parsers import validate_date_format, validate_date_range
-from bashcloud.utils.pagination import paginate_cli_command
-from bashcloud.infra.cli_adapter import CLIAdapter
-from bashcloud.infra.cache import ResultCache
-from bashcloud.tui.navigation import Navigator
+from kloudkompass.utils.parsers import validate_date_format, validate_date_range
+from kloudkompass.utils.pagination import paginate_cli_command
+from kloudkompass.infra.cli_adapter import CLIAdapter
+from kloudkompass.infra.cache import ResultCache
+from kloudkompass.tui.navigation import Navigator
 
 
 # =============================================================================
@@ -45,16 +45,16 @@ class TestValidationFailures:
     
     def test_3_invalid_provider_name(self):
         """Should raise for invalid provider."""
-        from bashcloud.core.provider_factory import get_cost_provider
+        from kloudkompass.core.provider_factory import get_cost_provider
         
-        with pytest.raises(BashCloudError) as exc_info:
+        with pytest.raises(KloudKompassError) as exc_info:
             get_cost_provider("invalid_provider")
         assert "unknown provider" in str(exc_info.value).lower()
     
     def test_4_negative_threshold(self):
         """Negative threshold should be handled."""
-        from bashcloud.core.cost_base import CostRecord
-        from bashcloud.aws.cost import AWSCostProvider
+        from kloudkompass.core.cost_base import CostRecord
+        from kloudkompass.aws.cost import AWSCostProvider
         
         provider = AWSCostProvider()
         records = [CostRecord(name="Test", amount=10.0, unit="USD", period="2024-01")]
@@ -77,7 +77,7 @@ class TestValidationFailures:
     
     def test_7_permission_denied_scenario(self):
         """Should detect permission errors in CLI output."""
-        from bashcloud.aws.cost import AWSCostProvider
+        from kloudkompass.aws.cost import AWSCostProvider
         
         mock_result = Mock()
         mock_result.returncode = 1
@@ -86,15 +86,15 @@ class TestValidationFailures:
         
         with patch('shutil.which', return_value='/usr/bin/aws'):
             with patch('subprocess.run', return_value=mock_result):
-                with patch('bashcloud.core.health.check_aws_credentials', 
+                with patch('kloudkompass.core.health.check_aws_credentials', 
                            return_value=(True, None)):
                     provider = AWSCostProvider()
-                    with pytest.raises(BashCloudError):
+                    with pytest.raises(KloudKompassError):
                         provider.get_cost_by_service("2024-01-01", "2024-02-01")
     
     def test_8_expired_credentials(self):
         """Should handle expired credentials."""
-        from bashcloud.core.health import check_aws_credentials
+        from kloudkompass.core.health import check_aws_credentials
         
         mock_result = Mock()
         mock_result.returncode = 1
@@ -109,13 +109,13 @@ class TestValidationFailures:
         adapter = CLIAdapter("test", timeout=1)
         
         with patch('subprocess.run', side_effect=subprocess.TimeoutExpired("cmd", 1)):
-            with pytest.raises(BashCloudError) as exc_info:
+            with pytest.raises(KloudKompassError) as exc_info:
                 adapter.run(["arg"])
             assert "timed out" in str(exc_info.value).lower()
     
     def test_10_malformed_json_response(self):
         """Should handle malformed JSON in CLI output."""
-        from bashcloud.infra.cli_adapter import CLIResult
+        from kloudkompass.infra.cli_adapter import CLIResult
         
         result = CLIResult(
             command=["test"],
@@ -238,7 +238,7 @@ class TestPaginationFailures:
             return result
         
         with patch('subprocess.run', side_effect=mock_run):
-            with pytest.raises(BashCloudError):
+            with pytest.raises(KloudKompassError):
                 paginate_cli_command(
                     build_command=lambda t: ["cmd"],
                     result_key="Items",
@@ -254,9 +254,9 @@ class TestConfigFailures:
     
     def test_16_corrupted_config_file(self):
         """Should handle corrupted TOML config."""
-        from bashcloud.config_manager import load_config, CONFIG_FILE
+        from kloudkompass.config_manager import load_config, CONFIG_FILE
         
-        with patch('bashcloud.config_manager.CONFIG_FILE') as mock_path:
+        with patch('kloudkompass.config_manager.CONFIG_FILE') as mock_path:
             mock_path.exists.return_value = True
             
             with patch('toml.load', side_effect=Exception("Parse error")):
@@ -265,9 +265,9 @@ class TestConfigFailures:
     
     def test_17_missing_config_returns_defaults(self):
         """Should return defaults when config missing."""
-        from bashcloud.config_manager import load_config, DEFAULT_CONFIG
+        from kloudkompass.config_manager import load_config, DEFAULT_CONFIG
         
-        with patch('bashcloud.config_manager.CONFIG_FILE') as mock_path:
+        with patch('kloudkompass.config_manager.CONFIG_FILE') as mock_path:
             mock_path.exists.return_value = False
             
             config = load_config()
@@ -276,10 +276,10 @@ class TestConfigFailures:
     
     def test_18_permission_denied_saving_config(self):
         """Should handle permission error when saving."""
-        from bashcloud.config_manager import save_config
+        from kloudkompass.config_manager import save_config
         
         with patch('builtins.open', side_effect=PermissionError("denied")):
-            with patch('bashcloud.config_manager.ensure_config_dir'):
+            with patch('kloudkompass.config_manager.ensure_config_dir'):
                 with pytest.raises(ConfigurationError) as exc_info:
                     save_config({"key": "value"})
                 assert "permission" in str(exc_info.value).lower()
@@ -297,7 +297,7 @@ class TestConfigFailures:
         mock_result.stderr = "The config profile (nonexistent) could not be found"
         
         with patch('subprocess.run', return_value=mock_result):
-            from bashcloud.core.health import check_aws_credentials
+            from kloudkompass.core.health import check_aws_credentials
             is_valid, error = check_aws_credentials()
             assert is_valid is False
 
@@ -317,7 +317,7 @@ class TestTUIFailures:
     
     def test_22_invalid_numeric_menu_input(self):
         """Should handle non-numeric menu input."""
-        from bashcloud.tui.prompts import select_breakdown
+        from kloudkompass.tui.prompts import select_breakdown
         
         # This is interactive and would require mocking input()
         # Documented as manual test case
@@ -340,10 +340,10 @@ class TestTUIFailures:
     def test_25_invalid_back_navigation(self):
         """Back from root screen should be handled."""
         nav = Navigator()
-        from bashcloud.tui.screens import Screen
+        from kloudkompass.tui.screens import Screen
         
         class MockScreen(Screen):
-            def display(self): pass
+            def render(self): pass
             def handle_input(self): return None
         
         nav.push(MockScreen())
@@ -364,7 +364,7 @@ class TestDashboardFailures:
     
     def test_27_table_overflow(self):
         """Table should handle very long content."""
-        from bashcloud.core.cost_base import CostRecord
+        from kloudkompass.core.cost_base import CostRecord
         
         # Very long service name
         record = CostRecord(
@@ -390,7 +390,7 @@ class TestDashboardFailures:
     
     def test_30_large_dataset_memory(self):
         """Should handle large result sets."""
-        from bashcloud.core.cost_base import CostRecord
+        from kloudkompass.core.cost_base import CostRecord
         
         # Create 10000 records
         records = [
@@ -399,7 +399,7 @@ class TestDashboardFailures:
         ]
         
         # Should be able to filter without memory issues
-        from bashcloud.aws.cost import AWSCostProvider
+        from kloudkompass.aws.cost import AWSCostProvider
         provider = AWSCostProvider()
         filtered = provider.filter_by_threshold(records, 5000.0)
         

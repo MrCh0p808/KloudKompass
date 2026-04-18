@@ -7,9 +7,9 @@ import pytest
 import json
 from unittest.mock import patch, Mock
 
-from bashcloud.aws.cost import AWSCostProvider
-from bashcloud.core.cost_base import CostRecord
-from bashcloud.core.exceptions import (
+from kloudkompass.aws.cost import AWSCostProvider
+from kloudkompass.core.cost_base import CostRecord
+from kloudkompass.core.exceptions import (
     CLIUnavailableError,
     CredentialError,
     DateRangeError,
@@ -50,7 +50,7 @@ class TestAWSCostByService:
     """Tests for get_cost_by_service method."""
     
     @patch('shutil.which', return_value='/usr/bin/aws')
-    @patch('bashcloud.core.health.check_aws_credentials', return_value=(True, None))
+    @patch('kloudkompass.core.health.check_aws_credentials', return_value=(True, None))
     def test_returns_cost_records(self, mock_creds, mock_which):
         """Should return list of CostRecord objects."""
         mock_result = Mock()
@@ -69,7 +69,7 @@ class TestAWSCostByService:
         assert all(isinstance(r, CostRecord) for r in records)
     
     @patch('shutil.which', return_value='/usr/bin/aws')
-    @patch('bashcloud.core.health.check_aws_credentials', return_value=(True, None))
+    @patch('kloudkompass.core.health.check_aws_credentials', return_value=(True, None))
     def test_sorted_by_cost_descending(self, mock_creds, mock_which):
         """Results should be sorted by amount, highest first."""
         mock_result = Mock()
@@ -89,7 +89,7 @@ class TestAWSCostByService:
         assert records[0].amount == 123.45
     
     @patch('shutil.which', return_value='/usr/bin/aws')
-    @patch('bashcloud.core.health.check_aws_credentials', return_value=(True, None))
+    @patch('kloudkompass.core.health.check_aws_credentials', return_value=(True, None))
     def test_records_have_correct_fields(self, mock_creds, mock_which):
         """CostRecord objects should have all required fields."""
         mock_result = Mock()
@@ -116,7 +116,7 @@ class TestAWSCostTotal:
     """Tests for get_total_cost method."""
     
     @patch('shutil.which', return_value='/usr/bin/aws')
-    @patch('bashcloud.core.health.check_aws_credentials', return_value=(True, None))
+    @patch('kloudkompass.core.health.check_aws_credentials', return_value=(True, None))
     def test_returns_single_record(self, mock_creds, mock_which):
         """Total should return single CostRecord."""
         mock_result = Mock()
@@ -140,7 +140,7 @@ class TestAWSCostDaily:
     """Tests for get_daily_cost method."""
     
     @patch('shutil.which', return_value='/usr/bin/aws')
-    @patch('bashcloud.core.health.check_aws_credentials', return_value=(True, None))
+    @patch('kloudkompass.core.health.check_aws_credentials', return_value=(True, None))
     def test_returns_daily_records(self, mock_creds, mock_which):
         """Should return one record per day."""
         mock_result = Mock()
@@ -166,7 +166,7 @@ class TestAWSCostEmptyResults:
     """Tests for empty result handling."""
     
     @patch('shutil.which', return_value='/usr/bin/aws')
-    @patch('bashcloud.core.health.check_aws_credentials', return_value=(True, None))
+    @patch('kloudkompass.core.health.check_aws_credentials', return_value=(True, None))
     def test_empty_results_handled(self, mock_creds, mock_which):
         """Should handle empty results gracefully."""
         mock_result = Mock()
@@ -190,7 +190,7 @@ class TestAWSCostValidation:
     """Tests for input validation."""
     
     @patch('shutil.which', return_value='/usr/bin/aws')
-    @patch('bashcloud.core.health.check_aws_credentials', return_value=(True, None))
+    @patch('kloudkompass.core.health.check_aws_credentials', return_value=(True, None))
     def test_invalid_date_format_raises(self, mock_creds, mock_which):
         """Should raise DateRangeError for invalid date format."""
         provider = AWSCostProvider()
@@ -202,7 +202,7 @@ class TestAWSCostValidation:
             )
     
     @patch('shutil.which', return_value='/usr/bin/aws')
-    @patch('bashcloud.core.health.check_aws_credentials', return_value=(True, None))
+    @patch('kloudkompass.core.health.check_aws_credentials', return_value=(True, None))
     def test_start_after_end_raises(self, mock_creds, mock_which):
         """Should raise DateRangeError when start > end."""
         provider = AWSCostProvider()
@@ -239,7 +239,7 @@ class TestAWSCostCredentialsInvalid:
         """Should raise CredentialError when credentials invalid."""
         provider = AWSCostProvider()
         
-        with patch('bashcloud.core.health.check_aws_credentials', 
+        with patch('kloudkompass.core.health.check_aws_credentials', 
                    return_value=(False, "No credentials configured")):
             with pytest.raises(CredentialError) as exc_info:
                 provider.get_cost_by_service(

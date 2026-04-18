@@ -1,0 +1,7 @@
+kloudkompass (0.1.0-1) unstable; urgency=low
+
+  * Initial release as a Debian package.
+  * Rebranded to TTox.Tech and licensed under MIT.
+  * Added Textual-based dashboard and interactive CLI/TUI.
+
+ -- TTox.Tech <contact@ttox.tech>  Sat, 18 Apr 2026 11:49:35 +0000

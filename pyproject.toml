@@ -3,21 +3,22 @@
 # pyproject.toml instead of setup.py used because it is the modern standard
 # for Python packaging. This file declares all metadata, dependencies, and
 # build configuration in one place. When someone runs pip install -e . this
-# file tells pip how to build and install the bashcloud package.
+# file tells pip how to build and install the kloudkompass package.
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "bashcloud"
-version = "0.1.0"
-description = "Terminal-first multi-cloud CLI for cloud practitioners who prefer shell workflows over GUIs"
+name = "kloudkompass"
+
+dynamic = ["version"]
+description = "Kloud Kompass – Terminal-first multi-cloud CLI for cloud practitioners who prefer shell workflows over GUIs"
 readme = "README.md"
-license = {text = "MIT"}
-requires-python = ">=3.8"
+license = {file = "LICENSE"}
+requires-python = ">=3.9"
 authors = [
-    {name = "BashCloud Contributors"}
+    {name = "TTox.Tech", email = "contact@ttox.tech"}
 ]
 keywords = ["cloud", "cli", "aws", "azure", "gcp", "terminal", "devops"]
 classifiers = [
@@ -28,11 +29,11 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: System :: Systems Administration",
 ]
 
@@ -45,25 +46,33 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+aws = [
+    "boto3>=1.26.0",
+]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "black>=23.0",
     "mypy>=1.0",
+    "build>=1.0",
+    "twine>=4.0",
 ]
 
 [project.scripts]
-bashcloud = "bashcloud.cli:main"
+kloudkompass = "kloudkompass.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/bashcloud/bashcloud"
-Documentation = "https://github.com/bashcloud/bashcloud#readme"
-Repository = "https://github.com/bashcloud/bashcloud"
-Issues = "https://github.com/bashcloud/bashcloud/issues"
+Homepage = "https://github.com/MrCh0p808/KloudKompass"
+Documentation = "https://github.com/MrCh0p808/KloudKompass#readme"
+Repository = "https://github.com/MrCh0p808/KloudKompass"
+Issues = "https://github.com/MrCh0p808/KloudKompass/issues"
+
+[tool.setuptools.dynamic]
+version = {attr = "kloudkompass.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["bashcloud*"]
+include = ["kloudkompass*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

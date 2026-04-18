@@ -7,7 +7,7 @@ import pytest
 from unittest.mock import patch, Mock
 from click.testing import CliRunner
 
-from bashcloud.cli import main
+from kloudkompass.cli import main
 
 
 class TestCLIHelp:
@@ -19,7 +19,7 @@ class TestCLIHelp:
         result = runner.invoke(main, ['--help'])
         
         assert result.exit_code == 0
-        assert "BashCloud" in result.output
+        assert "Kloud Kompass" in result.output
         assert "cost" in result.output
         assert "config" in result.output
     
@@ -50,7 +50,7 @@ class TestCLIConfig:
         """Should show current config."""
         runner = CliRunner()
         
-        with patch('bashcloud.config_manager.load_config', return_value={
+        with patch('kloudkompass.config_manager.load_config', return_value={
             "default_provider": "aws",
             "default_output": "table",
             "default_profile": None,
@@ -71,7 +71,7 @@ class TestCLICheck:
         runner = CliRunner()
         
         with patch('shutil.which', return_value='/usr/bin/aws'):
-            with patch('bashcloud.core.health.check_credentials', 
+            with patch('kloudkompass.core.health.check_credentials', 
                        return_value=(True, None)):
                 result = runner.invoke(main, ['check'])
         

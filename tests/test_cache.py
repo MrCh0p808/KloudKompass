@@ -7,7 +7,7 @@ import pytest
 import time
 from unittest.mock import Mock
 
-from bashcloud.infra.cache import ResultCache, CacheEntry, cache_result
+from kloudkompass.infra.cache import ResultCache, CacheEntry, cache_result
 
 
 class TestCacheEntry:
@@ -116,7 +116,7 @@ class TestCacheDecorator:
     
     def test_different_args_not_cached(self):
         """Different arguments should produce different cache keys."""
-        from bashcloud.infra.cache import ResultCache
+        from kloudkompass.infra.cache import ResultCache
         
         cache = ResultCache()
         

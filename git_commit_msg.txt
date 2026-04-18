@@ -1,0 +1,9 @@
+feat: enhance onboarding experience and implement Azure cost integration
+
+This commit improves the 'Zero-to-Hero' onboarding flow by adding humanized explanations and context-aware guides for AWS/Azure setup terminology.
+
+- Added 'Quick Guide' sections to help users with SSO session names, URLs, and regions.
+- Implemented native Azure Cost integration using 'az rest' for high-performance data fetching.
+- Optimized UI rendering by reverting to stable app.suspend() mechanics for terminal interactions.
+- Normalized Azure Cost Management matrix data into standardized CostRecord models.
+- Updated provider factory to fully support Azure as a production-ready provider.

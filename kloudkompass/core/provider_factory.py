@@ -62,7 +62,8 @@ _SECURITY_PROVIDER_REGISTRY: Dict[str, str] = {
 
 # Phase 3: Only AWS is fully implemented for all domains.
 # Cost was phase 2, compute/network/storage/iam/db/security are phase 3.
-_IMPLEMENTED_PROVIDERS = {"aws"}
+# Phase 8: Azure Cost Data Integration natively implemented.
+_IMPLEMENTED_PROVIDERS = {"aws", "azure"}
 
 
 def is_provider_implemented(provider_name: str) -> bool:

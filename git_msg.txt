@@ -1,0 +1,9 @@
+feat: implement zero to hero terminal onboarding for multi cloud
+
+This commit completely transforms the Textual gateway to catch missing cloud setup flows. It introduces the seamless Dependency, Authentication, and Workspace modals to the main Dashboard app view.
+
+Components added:
+* installer.py to execute missing CLI setups natively.
+* auth_manager.py for SSO execution.
+* wizard.py providing interactive Modals.
+* app.py restructured to suspend the UI for bash prompt interactions securely.

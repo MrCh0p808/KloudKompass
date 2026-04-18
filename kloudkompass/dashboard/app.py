@@ -212,7 +212,6 @@ class KloudKompassApp(App):
     DataTable {
         border: tall $primary-muted;
         background: $surface;
-        zebra_stripes: True;
     }
     
     DataTable > .datatable--cursor {

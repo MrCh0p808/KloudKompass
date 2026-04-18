@@ -47,7 +47,26 @@ class WizardModal(ModalScreen):
     .wizard-buttons {
         align: center middle;
         height: auto;
-        gap: 2;
+        margin-top: 1;
+    }
+    .wizard-guide {
+        background: $surface;
+        color: $text-muted;
+        padding: 1 2;
+        margin-top: 1;
+        border-left: solid $accent;
+        font-size: 90%;
+    }
+    .guide-title {
+        color: $accent;
+        text-style: bold;
+        margin-bottom: 1;
+    }
+    .guide-item {
+        margin-bottom: 0;
+    }
+    .guide-item b {
+        color: $text;
     }
     """
 
@@ -63,9 +82,10 @@ class DependencyModal(WizardModal):
         with Vertical(classes="wizard-dialog"):
             yield Static(f"🛠️  Missing {self.provider.upper()} Dependencies", classes="wizard-title")
             yield Static(
-                f"Your machine does not have the {self.provider.upper()} CLI installed.\n"
-                "KloudKompass can automatically configure this for you. "
-                "This will temporarily drop you to the terminal to accept OS prompts (e.g. sudo).",
+                f"It looks like the {self.provider.upper()} tool isn't installed on this machine yet.\n"
+                "KloudKompass needs this to talk to your cloud account securely. "
+                "We can run the official installer for you now. "
+                "You might see a black terminal screen for a moment—don't worry, that's just us doing the heavy lifting!",
                 classes="wizard-text"
             )
             
@@ -98,12 +118,25 @@ class AuthModal(WizardModal):
         with Vertical(classes="wizard-dialog"):
             yield Static(f"🔐 Unauthenticated ({self.provider.upper()})", classes="wizard-title")
             yield Static(
-                "KloudKompass relies on the official CLI credentials for security.\n"
-                "You are currently unauthenticated or your SSO token has expired. "
-                "Click below to launch an interactive login session.",
+                "To keep your data safe, KloudKompass uses your official cloud login.\n"
+                "It looks like you aren't logged in yet, or your session has timed out. "
+                "Click below to start a secure login session. We'll guide you through the prompts!",
                 classes="wizard-text"
             )
             yield Static(f"> {self.auth_cmd}", classes="wizard-code")
+
+            if self.provider == "aws":
+                with Vertical(classes="wizard-guide"):
+                    yield Static("💡 Quick Guide for AWS Setup:", classes="guide-title")
+                    yield Static("• [b]SSO Session Name[/b]: Just a nickname for this login (e.g., 'work' or 'personal').", classes="guide-item")
+                    yield Static("• [b]SSO Start URL[/b]: The login link provided by your company/team.", classes="guide-item")
+                    yield Static("• [b]SSO Region[/b]: Usually 'us-east-1' or where your team operates.", classes="guide-item")
+            
+            elif self.provider == "azure":
+                with Vertical(classes="wizard-guide"):
+                    yield Static("💡 Quick Guide for Azure Setup:", classes="guide-title")
+                    yield Static("• [b]Browser Login[/b]: We'll open a window for you to sign in with Microsoft.", classes="guide-item")
+                    yield Static("• [b]Default Tenant[/b]: This is your main organization account.", classes="guide-item")
 
             with Horizontal(classes="wizard-buttons"):
                 yield Button("LAUNCH LOGIN", variant="success", id="btn_login")

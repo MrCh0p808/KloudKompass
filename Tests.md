@@ -516,7 +516,7 @@
 | 2 | TestAttributionConstants | `test_line2_exists` | ATTRIBUTION_LINE2 defined |
 | 3 | TestAttributionConstants | `test_line1_has_year` | Year "2026" present |
 | 4 | TestAttributionConstants | `test_line1_has_company` | "TTox.Tech" present |
-| 5 | TestAttributionConstants | `test_line2_has_proprietary` | "proprietary" present |
+| 5 | TestAttributionConstants | `test_line2_has_open_source` | "open-source" present |
 | 6 | TestAttributionConstants | `test_full_combines_lines` | ATTRIBUTION_FULL has both lines |
 | 7 | TestAttributionConstants | `test_short_exists` | ATTRIBUTION_SHORT defined |
 | 8 | TestAttributionConstants | `test_legacy_footer_text` | FOOTER_TEXT == ATTRIBUTION_LINE1 |
@@ -734,4 +734,4 @@ tests/
 
 ---
 
-*© 2026 TTox.Tech. All Rights Reserved. Kloud Kompass is proprietary software.*
+*© 2026 TTox.Tech. All Rights Reserved. Kloud Kompass is open-source software.*

@@ -277,7 +277,67 @@ class KloudKompassApp(App):
         yield AttributionFooter(id="attribution_footer")
 
     def on_mount(self) -> None:
-        """Fetch summary data when app mounts and set initial view."""
+        """Dashboard entry point. Triggers onboarding flow if necessary."""
+        self.run_worker(self._run_onboarding_checks(), exclusive=True)
+
+    async def _run_onboarding_checks(self) -> None:
+        from kloudkompass.config_manager import load_config
+        from kloudkompass.core.installer import is_cli_installed
+        from kloudkompass.core.auth_manager import get_login_command, discover_aws_profiles, discover_azure_subscriptions
+        from kloudkompass.core.health import check_credentials
+        from kloudkompass.tui.onboarding.wizard import DependencyModal, AuthModal, WorkspaceModal
+        import subprocess
+        
+        config = load_config()
+        provider = config.get("default_provider", "aws").lower()
+        cli_name = "aws" if provider == "aws" else ("az" if provider == "azure" else "gcloud")
+        
+        # Step 1: Check CLI
+        if not is_cli_installed(cli_name):
+            cmd = await self.push_screen_wait(DependencyModal(provider))
+            if cmd:
+                await self.execute_interactive_command(cmd)
+                if not is_cli_installed(cli_name):
+                    self.notify("Installation failed or cancelled.", severity="error")
+                    self.exit()
+                    return
+            else:
+                return # App exited
+                
+        # Step 2: Check Auth
+        is_valid, _ = check_credentials(provider)
+        if not is_valid:
+            auth_cmd = get_login_command(provider)
+            if auth_cmd:
+                cmd = await self.push_screen_wait(AuthModal(provider, auth_cmd))
+                if cmd:
+                    await self.execute_interactive_command(cmd)
+                    is_valid, _ = check_credentials(provider)
+                    if not is_valid:
+                        self.notify("Authentication incomplete.", severity="error")
+                        self.exit()
+                        return
+                else:
+                    return
+
+        # Step 3: Workspace Discovery
+        workspaces = []
+        if provider == "aws":
+            workspaces = discover_aws_profiles()
+        elif provider == "azure":
+            workspaces = discover_azure_subscriptions()
+            
+        if len(workspaces) > 1:
+            selected = await self.push_screen_wait(WorkspaceModal(provider, workspaces))
+            if selected:
+                # Todo: map to TabbedContent workspaces in v2
+                self.notify(f"Workspaces bound: {len(selected)}", severity="success")
+
+        # All checks passed, boot dashboard
+        self._initialize_dashboard()
+
+    def _initialize_dashboard(self) -> None:
+        """Fetch summary data and mount views after setup is complete."""
         # Force the initial view mounting so sidebar highlights properly
         self.run_worker(self._switch_view(self.current_view), exclusive=True)
         self.run_worker(self._fetch_summary(), name="fetch_summary", exclusive=True)
@@ -287,6 +347,15 @@ class KloudKompassApp(App):
         
         # Background auto-updater check (Feature 50)
         self.run_worker(self._check_for_updates(), name="update_check", exclusive=False)
+
+    async def execute_interactive_command(self, cmd: str) -> None:
+        """Suspend the app, run a native shell command, and resume."""
+        import subprocess
+        with self.suspend():
+            print(f"\n[KloudKompass] Executing: {cmd}\n")
+            subprocess.run(cmd, shell=True)
+            print("\n[KloudKompass] Operation finished. Press Enter to return to Dashboard...")
+            input()
 
     async def _check_for_updates(self) -> None:
         """Check PyPI for newer versions in the background."""

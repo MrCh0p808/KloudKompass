@@ -48,7 +48,6 @@ class TestFooterAttribution:
     
     def test_footer_legal_is_open_source(self):
         """Footer legal text."""
-        # No longer asserting 'proprietary' since LINE2 is empty
         assert FOOTER_LEGAL == ""
     
     def test_get_footer_text_returns_full_attribution(self):

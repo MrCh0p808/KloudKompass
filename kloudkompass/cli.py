@@ -697,7 +697,39 @@ def check(provider):
 
 
 @main.command()
-def doctor():
+@click.option('--provider', '-p', type=click.Choice(['aws', 'azure', 'gcp'], case_sensitive=False), help="Cloud provider to query.")
+@click.option('--profile', help="Cloud provider profile/account to use.")
+@click.option('--region', help="Cloud provider region.")
+@click.option('--output', '-o', type=click.Choice(['table', 'plain', 'json', 'csv'], case_sensitive=False), default='table', help="Output format.")
+@click.option('--export', type=click.Path(), help="Export results to file.")
+@click.pass_context
+def security(ctx, provider, profile, region, output, export):
+    """Run security audit (public DBs, unencrypted disks, open SGs)."""
+    from kloudkompass.core.provider_factory import get_security_provider
+    try:
+        config = merge_cli_with_config(provider=provider, profile=profile, region=region, output=output, debug=ctx.obj.get('debug'))
+        effective_provider = config['provider']
+        security_provider = get_security_provider(effective_provider)
+        
+        click.echo(f"Running security audit for {effective_provider.upper()}...")
+        click.echo()
+        
+        records = security_provider.run_audit(region=config['region'], profile=config['profile'])
+        
+        if not records:
+            click.echo("No security findings detected. All clear!")
+            return
+            
+        format_records(records, OutputFormat(config['output']), title=f"{effective_provider.upper()} Security Findings")
+        if export:
+            export_format = 'json' if export.endswith('.json') else 'csv'
+            click.echo(f"\nExported to: {export_records(records, export, format=export_format)}")
+    except KloudKompassError as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(1)
+
+
+
     """
     Run environment health checks.
     

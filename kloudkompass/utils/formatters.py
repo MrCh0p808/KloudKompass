@@ -83,8 +83,13 @@ def format_as_plain(
         print(f"\n{title}")
         print("=" * len(title))
     
+    
+    if not records:
+        print("No records found.")
+        return
+    
     # Calculate column widths
-    name_width = max(len(r.name) for r in records) if records else 10
+    name_width = max(len(r.name) for r in records)
     name_width = min(name_width, 50)  # Cap width for readability
     
     # Print header

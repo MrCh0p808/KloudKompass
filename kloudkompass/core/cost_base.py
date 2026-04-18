@@ -6,7 +6,8 @@
 
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
+from typing import ClassVar
 
 from kloudkompass.core.provider_base import ProviderBase
 
@@ -16,7 +17,7 @@ class CostRecord:
     """
     Normalized cost record format.
     
-    This dataclass so that cost data from AWS, Azure, and GCP all
+    This dataclass ensures cost data from AWS, Azure, and GCP all
     look the same to the CLI. Each provider's cost module transforms
     their native response into this format.
     """
@@ -25,14 +26,41 @@ class CostRecord:
     unit: str          # Currency unit (USD, EUR, etc)
     period: str        # Time period this cost covers (YYYY-MM or YYYY-MM-DD)
     
+    # Required keys for from_dict() validation
+    REQUIRED_KEYS: ClassVar[list] = ["name", "amount", "unit", "period"]
+    
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON export."""
-        return {
-            "name": self.name,
-            "amount": self.amount,
-            "unit": self.unit,
-            "period": self.period,
-        }
+        return asdict(self)
+    
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "CostRecord":
+        """
+        Create a CostRecord from a dictionary.
+        
+        Normalizes keys and types, raising ValueError on missing
+        or invalid data so bad input gets caught early.
+        """
+        if not isinstance(d, dict):
+            raise ValueError(f"Expected dict, got {type(d).__name__}")
+        
+        # Check all required keys are present
+        missing = [k for k in cls.REQUIRED_KEYS if k not in d]
+        if missing:
+            raise ValueError(f"Missing required keys: {', '.join(missing)}")
+        
+        # Normalize amount to float, handling string input from APIs
+        try:
+            amount = float(d["amount"])
+        except (ValueError, TypeError) as e:
+            raise ValueError(f"Invalid amount value: {d['amount']}") from e
+        
+        return cls(
+            name=str(d["name"]),
+            amount=amount,
+            unit=str(d["unit"]),
+            period=str(d["period"]),
+        )
 
 
 class CostProvider(ProviderBase):

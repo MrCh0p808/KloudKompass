@@ -30,7 +30,6 @@ class TestAttributionConstants:
     
     def test_line2_is_empty(self):
         from kloudkompass.tui.footer import ATTRIBUTION_LINE2
-        # No longer asserting 'proprietary' since LINE2 is empty
         assert ATTRIBUTION_LINE2 == ""
     
     def test_full_combines_lines(self):

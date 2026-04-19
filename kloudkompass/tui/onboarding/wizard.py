@@ -11,6 +11,9 @@ from textual.widgets import Static, Button, SelectionList
 from textual.widgets.selection_list import Selection
 
 from kloudkompass.core.installer import get_install_command
+from kloudkompass.core.auth_manager import LoginOption
+from kloudkompass.dashboard.widgets.qr_widget import QRWidget
+from typing import List, Dict, Optional, Any
 
 class WizardModal(ModalScreen):
     """Base class for centered wizard popups."""
@@ -55,7 +58,6 @@ class WizardModal(ModalScreen):
         padding: 1 2;
         margin-top: 1;
         border-left: solid $accent;
-        font-size: 90%;
     }
     .guide-title {
         color: $accent;
@@ -65,8 +67,32 @@ class WizardModal(ModalScreen):
     .guide-item {
         margin-bottom: 0;
     }
-    .guide-item b {
-        color: $text;
+    #auth_selector {
+        height: 8;
+        margin-bottom: 1;
+        border: none;
+    }
+    .qr-flex-container {
+        layout: horizontal;
+        height: 10;
+        background: $surface-darken-1;
+        margin-top: 1;
+        padding: 1 2;
+        border: dashed $primary;
+    }
+    #qr_auth {
+        width: 16;
+        height: auto;
+    }
+    .qr-header {
+        color: $accent;
+        text-style: bold;
+        margin-left: 2;
+        margin-top: 1;
+    }
+    .qr-sub {
+        color: $text-muted;
+        margin-left: 2;
     }
     """
 
@@ -107,44 +133,95 @@ class DependencyModal(WizardModal):
 
 
 class AuthModal(WizardModal):
-    """Prompts the user to launch interactive SSO authentication."""
+    """Prompts the user to select and launch a cloud authentication method."""
     
-    def __init__(self, provider: str, auth_cmd: str):
+    def __init__(self, provider: str, options: List[LoginOption], qr_url: Optional[str] = None):
         super().__init__()
         self.provider = provider
-        self.auth_cmd = auth_cmd
+        self.options = options
+        self.qr_url = qr_url
+        self._selected_option = next((opt for opt in options if opt.is_recommended), options[0])
 
     def compose(self) -> ComposeResult:
         with Vertical(classes="wizard-dialog"):
-            yield Static(f"🔐 Unauthenticated ({self.provider.upper()})", classes="wizard-title")
+            yield Static(f"🔐 Select Login Method ({self.provider.upper()})", classes="wizard-title")
             yield Static(
-                "To keep your data safe, KloudKompass uses your official cloud login.\n"
-                "It looks like you aren't logged in yet, or your session has timed out. "
-                "Click below to start a secure login session. We'll guide you through the prompts!",
+                "Choose how you want to connect to your cloud account. "
+                "SSO is highly recommended for security and ease of use.",
                 classes="wizard-text"
             )
-            yield Static(f"> {self.auth_cmd}", classes="wizard-code")
-
-            if self.provider == "aws":
-                with Vertical(classes="wizard-guide"):
-                    yield Static("💡 Quick Guide for AWS Setup:", classes="guide-title")
-                    yield Static("• [b]SSO Session Name[/b]: Just a nickname for this login (e.g., 'work' or 'personal').", classes="guide-item")
-                    yield Static("• [b]SSO Start URL[/b]: The login link provided by your company/team.", classes="guide-item")
-                    yield Static("• [b]SSO Region[/b]: Usually 'us-east-1' or where your team operates.", classes="guide-item")
             
-            elif self.provider == "azure":
-                with Vertical(classes="wizard-guide"):
-                    yield Static("💡 Quick Guide for Azure Setup:", classes="guide-title")
-                    yield Static("• [b]Browser Login[/b]: We'll open a window for you to sign in with Microsoft.", classes="guide-item")
-                    yield Static("• [b]Default Tenant[/b]: This is your main organization account.", classes="guide-item")
+            # 1. Selection List for Auth Methods
+            selections = [
+                Selection(opt.name, opt.id, opt.id == self._selected_option.id)
+                for opt in self.options
+            ]
+            yield SelectionList(*selections, id="auth_selector")
+            
+            # 2. Dynamic Description & Command
+            yield Static(self._selected_option.description, id="auth_desc", classes="wizard-text")
+            yield Static(f"> {self._selected_option.command}", id="auth_cmd_display", classes="wizard-code")
+            
+            if self.qr_url:
+                with Horizontal(classes="qr-flex-container"):
+                    yield QRWidget(self.qr_url, id="qr_auth")
+                    with Vertical():
+                        yield Static("📱 [b]Scan to Login[/b]", classes="qr-header")
+                        yield Static("Use your phone to authorize this session.", classes="qr-sub")
+
+            # 3. Dynamic Guide
+            yield Vertical(id="guide_container", classes="wizard-guide")
 
             with Horizontal(classes="wizard-buttons"):
                 yield Button("LAUNCH LOGIN", variant="success", id="btn_login")
                 yield Button("CANCEL", variant="error", id="btn_cancel")
 
+    def on_mount(self) -> None:
+        """Initialize the guide on first mount."""
+        self.query_one("#guide_container").mount_all(self._render_guide())
+
+    def _render_guide(self):
+        """Helper to yield guide items without using context managers (avoids IndexError)."""
+        yield Static(f"💡 Setup Guide:", classes="guide-title")
+        for item in self._selected_option.guide:
+            yield Static(item, classes="guide-item")
+
+    def on_selection_list_selected_changed(self, event: SelectionList.SelectedChanged) -> None:
+        """Update the UI when the user picks a different login method."""
+        if getattr(self, "_updating_selection", False):
+            return
+
+        # Handle Radio Behavior (single selection only)
+        if not event.selection_list.selected:
+            self._updating_selection = True
+            event.selection_list.select(self._selected_option.id)
+            self._updating_selection = False
+            return
+
+        if len(event.selection_list.selected) > 1:
+            self._updating_selection = True
+            new_id = [sid for sid in event.selection_list.selected if sid != self._selected_option.id][0]
+            event.selection_list.deselect_all()
+            event.selection_list.select(new_id)
+            self._updating_selection = False
+            selected_id = new_id
+        else:
+            selected_id = event.selection_list.selected[0]
+        self._selected_option = next(opt for opt in self.options if opt.id == selected_id)
+        
+        # Update UI components
+        self.query_one("#auth_desc").update(self._selected_option.description)
+        self.query_one("#auth_cmd_display").update(f"> {self._selected_option.command}")
+        
+        # Refresh the guide container
+        guide_container = self.query_one("#guide_container")
+        guide_container.query("*").remove()
+        guide_container.mount_all(self._render_guide())
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "btn_login":
-            self.dismiss(self.auth_cmd)
+            # Return the selected option so the app knows both command AND guide
+            self.dismiss(self._selected_option)
         else:
             self.dismiss(None)
 

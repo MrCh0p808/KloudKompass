@@ -103,9 +103,6 @@ class ComputeView(Container):
         Binding("escape", "clear_search", "Clear Filters"),
         Binding("r", "filter_running", "Running Only"),
         Binding("space", "toggle_select", "Select"),
-        Binding("ctrl+s", "start_instance", "Start"),
-        Binding("ctrl+x", "stop_instance", "Stop"),
-        Binding("shift+t", "terminate_instance", "Terminate", show=False),
         Binding("t", "edit_tags", "Edit Tags"),
         Binding("h", "toggle_columns", "Toggle Columns"),
         Binding("c", "copy_id", "Copy ID"),
@@ -147,6 +144,10 @@ class ComputeView(Container):
                     with TabPane("Metrics", id="tab_metrics"):
                         yield Static("CloudWatch CPU Utilization (simulated)\n\n[green]      __      __\n   __/  \\    /  \\\n__/      \\__/    \\___[/green]", id="details_metrics")
                         
+        with Container(classes="action-plate", id="action_plate"):
+            # Provider-specific action buttons will be injected here
+            pass
+
         yield Static("Ready — press a filter to load instances.", classes="status-line", id="compute_status")
 
     def on_mount(self) -> None:
@@ -155,6 +156,8 @@ class ComputeView(Container):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         bid = event.button.id
+        if not bid: return
+        
         if bid == "filter_all":
             self.state_filter = None
             self._fetch_or_render()
@@ -166,6 +169,9 @@ class ComputeView(Container):
             self._fetch_or_render()
         elif bid == "btn_refresh":
             self._load_instances()
+        elif bid.startswith("act_"):
+            action = bid.removeprefix("act_")
+            self._perform_instance_action(action)
 
     def action_focus_search(self) -> None:
         self.query_one("#search_input").focus()
@@ -426,16 +432,36 @@ class ComputeView(Container):
             from kloudkompass.config_manager import load_config
             import asyncio
             config = load_config()
-            provider = get_compute_provider(config.get("default_provider", "aws"))
-            region = config.get("default_region", "us-east-1")
+            
+            # Resolve context from active workspace
+            try:
+                parent = self.parent
+                while parent and not hasattr(parent, "context"):
+                    parent = parent.parent
+                context = parent.context
+                provider_name = context.provider
+                region = context.region or config.get("default_region", "us-east-1")
+                profile = context.profile
+            except Exception:
+                provider_name = config.get("default_provider", "aws")
+                region = config.get("default_region", "us-east-1")
+                profile = config.get("default_profile")
+
+            provider = get_compute_provider(provider_name)
             
             if action == "start":
-                await asyncio.to_thread(provider.start_instance, instance_ids=instance_ids, region=region)
+                await asyncio.to_thread(provider.start_instance, instance_ids=instance_ids, region=region, profile=profile)
             elif action == "stop":
-                await asyncio.to_thread(provider.stop_instance, instance_ids=instance_ids, region=region)
+                await asyncio.to_thread(provider.stop_instance, instance_ids=instance_ids, region=region, profile=profile)
+            elif action == "azure_deallocate":
+                # Special Azure method
+                if hasattr(provider, "deallocate_instance"):
+                    await asyncio.to_thread(provider.deallocate_instance, instance_ids=instance_ids, profile=profile)
+            elif action == "azure_stop":
+                if hasattr(provider, "power_off_instance"):
+                    await asyncio.to_thread(provider.power_off_instance, instance_ids=instance_ids, profile=profile)
             elif action == "terminate":
-                # Ensure the provider implements terminate_instance, AWS SDK handles this.
-                await asyncio.to_thread(provider.terminate_instance, instance_ids=instance_ids, region=region)
+                await asyncio.to_thread(provider.terminate_instance, instance_ids=instance_ids, region=region, profile=profile)
                 
             self.app.notify(f"Successfully sent {action} command to {len(instance_ids)} instance(s)")
             self.selected_instances.clear()
@@ -536,9 +562,27 @@ class ComputeView(Container):
             import asyncio
 
             config = load_config()
-            region = config.get("default_region", "us-east-1")
-            profile = config.get("default_profile")
-            provider = get_compute_provider(config.get("default_provider", "aws"))
+            # Get context from parent Workspace kernel
+            try:
+                workspace = self.app.get_child_by_type("Workspace") # simplified
+                # Realistically we find the ancestor Workspace
+                parent = self.parent
+                while parent and not hasattr(parent, "context"):
+                    parent = parent.parent
+                
+                context = parent.context
+                provider_name = context.provider
+                region = context.region or config.get("default_region", "us-east-1")
+                profile = context.profile
+            except Exception:
+                provider_name = config.get("default_provider", "aws")
+                region = config.get("default_region", "us-east-1")
+                profile = config.get("default_profile")
+
+            provider = get_compute_provider(provider_name)
+            
+            # Inject Specialized Action Buttons once
+            self.call_from_thread(self._inject_actions, provider)
 
             filters = {"instance-state-name": state} if state else None
             
@@ -568,6 +612,25 @@ class ComputeView(Container):
         finally:
             table.loading = False
 
+
+    def _inject_actions(self, provider):
+        """Inject customized action buttons from the provider manifest."""
+        plate = self.query_one("#action_plate", Container)
+        if plate.children: return # Already injected
+        
+        # Standard actions
+        plate.mount(Button("Start", id="act_start", variant="success"))
+        plate.mount(Button("Stop", id="act_stop", variant="error"))
+        
+        # Specialized actions
+        custom = provider.get_custom_actions("compute", "*")
+        for act in custom:
+            plate.mount(Button(
+                act.get("name"), 
+                id=f"act_{act.get('id')}", 
+                variant=act.get("variant", "default"),
+                tooltip=act.get("tooltip", "")
+            ))
 
     def _render_table(self) -> None:
         table = self.query_one("#compute_table", DataTable)

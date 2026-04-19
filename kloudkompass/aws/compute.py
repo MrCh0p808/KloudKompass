@@ -24,6 +24,16 @@ class AWSComputeProvider(ComputeProvider):
     provider_name = "aws"
     cli_command = "aws"
 
+    def get_manifest(self) -> dict:
+        return {
+            "compute": {
+                "label": "🖥️  EC2",
+                "tooltip": "Manage EC2 instances",
+                "icon": "🖥️",
+                "id": "nav_compute"
+            }
+        }
+
     def is_available(self) -> bool:
         import shutil
         return shutil.which("aws") is not None

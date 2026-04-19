@@ -40,6 +40,16 @@ class AWSCostProvider(CostProvider):
     # Default granularity for different breakdown types
     # Monthly makes sense for service breakdown, daily for trend analysis
     DEFAULT_GRANULARITY = "MONTHLY"
+
+    def get_manifest(self) -> dict:
+        return {
+            "cost": {
+                "label": "💰 Billing",
+                "tooltip": "View detailed AWS cost analysis",
+                "icon": "💰",
+                "id": "nav_cost"
+            }
+        }
     
     def is_available(self) -> bool:
         """Check if AWS CLI is installed."""

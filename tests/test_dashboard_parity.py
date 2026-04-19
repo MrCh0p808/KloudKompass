@@ -105,6 +105,8 @@ class TestDashboardAppParity:
     
     def test_sidebar_uses_brand_short(self):
         """Sidebar should use BRAND_SHORT."""
-        from kloudkompass.dashboard import app
-        source = inspect.getsource(app.Sidebar)
-        assert 'BRAND_SHORT' in source
+        from kloudkompass.dashboard.widgets import workspace_shell
+        from kloudkompass.tui.screens import BRAND_SHORT
+        source = inspect.getsource(workspace_shell.DynamicSidebar)
+        # Should use the brand_short property which was seeded from BRAND_SHORT
+        assert 'brand_short' in source.lower()

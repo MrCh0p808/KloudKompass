@@ -31,6 +31,16 @@ class AzureCostProvider(CostProvider):
     
     def __init__(self):
         self._adapter = get_azure_cli_adapter()
+
+    def get_manifest(self) -> dict:
+        return {
+            "cost": {
+                "label": "📉 Cost Mgmt",
+                "tooltip": "Analyze Azure spending",
+                "icon": "📉",
+                "id": "nav_cost"
+            }
+        }
     
     def is_available(self) -> bool:
         """Check if Azure CLI is installed."""

@@ -18,10 +18,10 @@ class TestProviderImplementationStatus:
         from kloudkompass.core.provider_factory import is_provider_implemented
         assert is_provider_implemented("aws") is True
     
-    def test_azure_coming_soon(self):
-        """Azure should be marked as coming soon."""
+    def test_azure_is_implemented(self):
+        """Azure should be marked as implemented."""
         from kloudkompass.core.provider_factory import is_provider_implemented
-        assert is_provider_implemented("azure") is False
+        assert is_provider_implemented("azure") is True
     
     def test_gcp_coming_soon(self):
         """GCP should be marked as coming soon."""
@@ -32,8 +32,8 @@ class TestProviderImplementationStatus:
 class TestProviderSelectionBlocking:
     """Tests that unimplemented providers are blocked."""
     
-    def test_azure_selection_blocked_in_prompts(self):
-        """Azure selection should be blocked with helpful message."""
+    def test_gcp_selection_blocked_in_prompts(self):
+        """GCP selection should be blocked with helpful message."""
         from kloudkompass.tui import prompts
         source = inspect.getsource(prompts.select_provider)
         assert 'is_provider_implemented' in source
@@ -48,18 +48,13 @@ class TestProviderSelectionBlocking:
 class TestMulticloudMessaging:
     """Tests for multicloud messaging quality."""
     
-    def test_azure_message_not_generic(self):
-        """Azure error should not be generic 'not implemented'."""
+    def test_azure_message_is_interactive(self):
+        """Azure error should provide az login instructions."""
         from kloudkompass.tui.provider_setup import check_provider_ready
         result = check_provider_ready("azure")
         assert "not implemented" not in result.error.lower()
-        assert "not yet available" in result.error.lower()
-    
-    def test_azure_message_mentions_alternative(self):
-        """Azure error should mention AWS as alternative."""
-        from kloudkompass.tui.provider_setup import check_provider_ready
-        result = check_provider_ready("azure")
-        assert "AWS" in result.error
+        # It should advise installing or logging in via 'az'
+        assert "az login" in result.error.lower() or "azure cli" in result.error.lower()
     
     def test_gcp_message_not_generic(self):
         """GCP error should not be generic 'not implemented'."""
@@ -77,8 +72,8 @@ class TestMulticloudMessaging:
 class TestProviderListShowsStatus:
     """Tests that provider list shows implementation status."""
     
-    def test_prompt_shows_coming_soon_for_azure(self):
-        """Provider prompt should show Coming soon for Azure."""
+    def test_prompt_shows_coming_soon_for_gcp(self):
+        """Provider prompt should show Coming soon for GCP."""
         from kloudkompass.tui import prompts
         source = inspect.getsource(prompts.select_provider)
         assert 'Coming soon' in source

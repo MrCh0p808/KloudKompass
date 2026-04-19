@@ -46,6 +46,15 @@ class AWSNetworkProvider(NetworkProvider):
                 suggestion="Run 'aws configure' or check your ~/.aws/credentials"
             )
 
+    def get_manifest(self) -> Dict[str, Any]:
+        """Return the module manifest for the Adaptive Sidebar."""
+        return {
+            "network": {
+                "label": "Network (VPC)",
+                "icon": "🌐"
+            }
+        }
+
     @staticmethod
     def _extract_name(tags: list) -> str:
         """Extract Name tag value from AWS tags list."""

@@ -57,21 +57,13 @@ class TestCheckProviderReady:
         assert check_provider_ready is not None
     
     def test_unimplemented_provider_fails(self):
-        """Azure/GCP should return failure with helpful message."""
-        from kloudkompass.tui.provider_setup import check_provider_ready
-        
-        result = check_provider_ready("azure")
-        assert result.success is False
-        assert "not yet available" in result.error
-        assert "AWS" in result.error
-    
-    def test_gcp_not_implemented(self):
         """GCP should return failure with helpful message."""
         from kloudkompass.tui.provider_setup import check_provider_ready
         
         result = check_provider_ready("gcp")
         assert result.success is False
         assert "not yet available" in result.error
+        assert "AWS" in result.error
     
     @patch('kloudkompass.tui.provider_setup.check_cli_installed')
     @patch('kloudkompass.tui.provider_setup.check_credentials')
@@ -260,13 +252,12 @@ class TestModulePurity:
 class TestMulticloudUXHonesty:
     """Tests for multicloud UX messaging."""
     
-    def test_azure_message_is_helpful(self):
-        """Azure error should mention AWS as alternative."""
+    def test_azure_message_is_interactive(self):
+        """Azure error should provide CLI instructions."""
         from kloudkompass.tui.provider_setup import check_provider_ready
         
         result = check_provider_ready("azure")
-        assert "AWS" in result.error
-        assert "Currently supported" in result.error or "not yet available" in result.error
+        assert "az login" in result.error.lower() or "azure cli" in result.error.lower()
     
     def test_gcp_message_is_helpful(self):
         """GCP error should mention AWS as alternative."""
@@ -289,10 +280,10 @@ class TestProviderFactory:
         from kloudkompass.core.provider_factory import is_provider_implemented
         assert is_provider_implemented("aws") is True
     
-    def test_azure_not_implemented(self):
-        """Azure should not be implemented yet."""
+    def test_azure_is_implemented(self):
+        """Azure should be implemented."""
         from kloudkompass.core.provider_factory import is_provider_implemented
-        assert is_provider_implemented("azure") is False
+        assert is_provider_implemented("azure") is True
     
     def test_gcp_not_implemented(self):
         """GCP should not be implemented yet."""

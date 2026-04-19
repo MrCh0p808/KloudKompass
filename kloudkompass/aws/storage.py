@@ -43,6 +43,15 @@ class AWSStorageProvider(StorageProvider):
                 suggestion="Run 'aws configure' or check your ~/.aws/credentials"
             )
 
+    def get_manifest(self) -> Dict[str, Any]:
+        """Return the module manifest for the Adaptive Sidebar."""
+        return {
+            "storage": {
+                "label": "Storage (S3/EBS)",
+                "icon": "🗄️"
+            }
+        }
+
     @staticmethod
     def _extract_tags(tags: list) -> Dict[str, str]:
         """Convert AWS tags list to dict."""

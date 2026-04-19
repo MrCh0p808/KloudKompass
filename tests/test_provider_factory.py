@@ -41,9 +41,9 @@ class TestIsProviderImplemented:
         from kloudkompass.core.provider_factory import is_provider_implemented
         assert is_provider_implemented("aws") is True
     
-    def test_azure_not_implemented(self):
+    def test_azure_is_implemented(self):
         from kloudkompass.core.provider_factory import is_provider_implemented
-        assert is_provider_implemented("azure") is False
+        assert is_provider_implemented("azure") is True
     
     def test_gcp_not_implemented(self):
         from kloudkompass.core.provider_factory import is_provider_implemented

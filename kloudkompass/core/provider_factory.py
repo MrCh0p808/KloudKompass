@@ -193,3 +193,7 @@ def register_provider(name: str, class_path: str, domain: str = "cost") -> None:
         valid = ", ".join(registries.keys())
         raise ValueError(f"Unknown domain '{domain}'. Valid: {valid}")
     registry[name.lower()] = class_path
+
+def get_provider_list() -> list:
+    """Return list of all registered provider keys (aws, azure, gcp)."""
+    return list(_COST_PROVIDER_REGISTRY.keys())

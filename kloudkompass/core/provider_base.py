@@ -5,7 +5,7 @@
 # the same interface, making the CLI code clean and provider-agnostic.
 
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 
 class ProviderBase(ABC):
@@ -44,6 +44,26 @@ class ProviderBase(ABC):
         """
         pass
     
+    @abstractmethod
+    def get_manifest(self) -> Dict[str, Any]:
+        """
+        Return the provider's capability manifest.
+        
+        This defines which modules (Compute, Cost, etc.) are supported
+        and their localized labels/icons for the Adaptive Sidebar.
+        
+        Example: {"compute": {"label": "EC2", "icon": "🖥️"}, "cost": {"label": "Billing"}}
+        """
+        pass
+
+    def get_custom_actions(self, resource_type: str, resource_id: str) -> List[Dict[str, str]]:
+        """
+        Return a list of specialized actions for a specific resource.
+        
+        Example: [{"name": "Deallocate", "id": "deallocate", "variant": "warning"}]
+        """
+        return []
+
     def get_provider_name(self) -> str:
         """Return the human-readable provider name."""
         return self.provider_name

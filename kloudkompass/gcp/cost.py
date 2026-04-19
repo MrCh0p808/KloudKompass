@@ -41,10 +41,18 @@ class GCPCostProvider(CostProvider):
         return shutil.which("gcloud") is not None
     
     def validate_credentials(self) -> bool:
-        """Check if GCP credentials are valid."""
-        from kloudkompass.core.health import check_gcp_credentials
         is_valid, _ = check_gcp_credentials()
         return is_valid
+
+    def get_manifest(self) -> dict:
+        """Return the module manifest for the Adaptive Sidebar."""
+        return {
+            "cost": {
+                "label": "GCP Billing",
+                "icon": "💰",
+                "id": "nav_cost_gcp"
+            }
+        }
     
     def get_total_cost(
         self,

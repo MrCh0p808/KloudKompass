@@ -50,6 +50,15 @@ class AWSIAMProvider(IAMProvider):
                 suggestion="Run 'aws configure' or check your ~/.aws/credentials"
             )
 
+    def get_manifest(self) -> Dict[str, Any]:
+        """Return the module manifest for the Adaptive Sidebar."""
+        return {
+            "iam": {
+                "label": "Identity (IAM)",
+                "icon": "🔐"
+            }
+        }
+
     def _get_credential_report(self, profile: Optional[str] = None) -> List[Dict[str, str]]:
         """
         Generate and fetch the IAM credential report to avoid N+1 queries.

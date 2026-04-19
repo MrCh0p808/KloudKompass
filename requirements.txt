@@ -4,6 +4,7 @@ rich>=10.9
 python-dotenv>=1.0
 toml>=0.10
 textual>=0.50
+segno>=1.6
 
 # AWS support (optional in pyproject.toml, included here for convenience)
 boto3>=1.26.0

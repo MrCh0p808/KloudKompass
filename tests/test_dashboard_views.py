@@ -89,26 +89,26 @@ class TestViewRegistry:
     """Verify the VIEW_REGISTRY maps all 8 views correctly."""
 
     def test_registry_has_8_views(self):
-        from kloudkompass.dashboard.app import VIEW_REGISTRY
+        from kloudkompass.dashboard.widgets.workspace_shell import VIEW_REGISTRY
         assert len(VIEW_REGISTRY) == 8
 
     def test_registry_contains_all_view_names(self):
-        from kloudkompass.dashboard.app import VIEW_REGISTRY
+        from kloudkompass.dashboard.widgets.workspace_shell import VIEW_REGISTRY
         expected = {"cost", "compute", "network", "storage", "iam", "database", "security", "doctor"}
         assert set(VIEW_REGISTRY.keys()) == expected
 
     def test_registry_values_are_classes(self):
-        from kloudkompass.dashboard.app import VIEW_REGISTRY
+        from kloudkompass.dashboard.widgets.workspace_shell import VIEW_REGISTRY
         for name, cls in VIEW_REGISTRY.items():
             assert isinstance(cls, type), f"{name} → {cls} is not a class"
 
     def test_registry_cost_maps_to_cost_view(self):
-        from kloudkompass.dashboard.app import VIEW_REGISTRY
+        from kloudkompass.dashboard.widgets.workspace_shell import VIEW_REGISTRY
         from kloudkompass.dashboard.views.cost_view import CostView
         assert VIEW_REGISTRY["cost"] is CostView
 
     def test_registry_compute_maps_to_compute_view(self):
-        from kloudkompass.dashboard.app import VIEW_REGISTRY
+        from kloudkompass.dashboard.widgets.workspace_shell import VIEW_REGISTRY
         from kloudkompass.dashboard.views.compute_view import ComputeView
         assert VIEW_REGISTRY["compute"] is ComputeView
 
@@ -126,17 +126,18 @@ class TestKloudKompassAppStructure:
 
     def test_app_has_sub_title(self):
         from kloudkompass.dashboard.app import KloudKompassApp
-        assert KloudKompassApp.SUB_TITLE == "Dashboard"
+        assert KloudKompassApp.SUB_TITLE == "Management OS"
 
     def test_app_has_bindings(self):
         from kloudkompass.dashboard.app import KloudKompassApp
-        assert len(KloudKompassApp.BINDINGS) >= 10
+        assert len(KloudKompassApp.BINDINGS) >= 8
 
-    @patch('kloudkompass.config_manager.get_config_value', return_value="cost")
-    def test_app_init_sets_current_view(self, mock_get_config):
-        from kloudkompass.dashboard.app import KloudKompassApp
-        app = KloudKompassApp()
-        assert app.current_view == "cost"
+    def test_workspace_init_sets_current_view(self):
+        from kloudkompass.dashboard.widgets.workspace_shell import Workspace
+        from kloudkompass.core.workspace_registry import WorkspaceContext
+        context = WorkspaceContext(id="test", provider="aws", last_view="cost")
+        workspace = Workspace(context)
+        assert workspace.current_view == "cost"
 
 
 # ────────────────────────────────────────────────────
@@ -147,10 +148,10 @@ class TestSidebarStructure:
     """Verify the sidebar has the correct buttons."""
 
     def test_sidebar_is_vertical(self):
-        from kloudkompass.dashboard.app import Sidebar
+        from kloudkompass.dashboard.widgets.workspace_shell import DynamicSidebar
         from textual.containers import Vertical
-        assert issubclass(Sidebar, Vertical)
+        assert issubclass(DynamicSidebar, Vertical)
 
     def test_sidebar_has_compose_method(self):
-        from kloudkompass.dashboard.app import Sidebar
-        assert hasattr(Sidebar, "compose")
+        from kloudkompass.dashboard.widgets.workspace_shell import DynamicSidebar
+        assert hasattr(DynamicSidebar, "compose")

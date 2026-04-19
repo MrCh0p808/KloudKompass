@@ -1,6 +1,6 @@
 <p align="center">
-  <strong>☁️ Kloud Kompass</strong><br>
-  <em>Your Cloud Console On Terminal</em>
+  <strong>☁️ Kloud Kompass OS</strong><br>
+  <em>The Multi-Kernel Management OS for the Terminal</em>
 </p>
 
 <p align="center">
@@ -12,7 +12,7 @@
 
 ---
 
-**Kloud Kompass** is a terminal-first, multi-cloud CLI toolkit for DevOps engineers, SREs, and cloud practitioners who prefer shell workflows over browser consoles. It wraps cloud provider CLIs into an interactive, menu-driven experience with full keyboard navigation, exportable output, and a Textual-powered dashboard — all from your terminal.
+**Kloud Kompass OS** is a terminal-first, **multi-kernel management OS** for DevOps engineers, SREs, and secops practitioners. Unlike traditional CLIs, it orchestrates up to 10 isolated, provider-aware cloud account kernels with dynamic sidebar re-composition, global staggered task scheduling, and decision-based notification hubs.
 
 ```
 ╦╔═ ╦  ╔═╗╦ ╦╔╦╗  ╦╔═╔═╗╔╦╗╔═╗╔═╗╔═╗╔═╗
@@ -23,12 +23,12 @@
 
 ## Why Kloud Kompass?
 
-- 🖥️ **Terminal-native** — No browser, no GUI, no context switching. Just your terminal.
-- 🔍 **Interactive menus** — Drill into compute, networking, storage, IAM, databases, and security with guided wizards.
-- 📊 **Dual interface** — Choose between interactive TUI menus (prompt-toolkit) or a full Textual dashboard with sidebar navigation.
-- 💰 **Cost visibility** — Query billing data by service, usage type, or daily breakdown with threshold filtering.
-- 🔒 **Security auditing** — Built-in vulnerability scanner for public databases, unencrypted disks, and open security groups.
-- 📦 **Export everything** — CSV, JSON, or Markdown with one keypress.
+- 🖥️ **Terminal-native OS** — Tab-based workspace managing up to 10 cloud account kernels simultaneously.
+- 🔍 **Adaptive UI Engine** — Sidebar and dashboard re-compose dynamically based on active cloud provider manifests.
+- ⚡ **Smart Staggered Updates** — Global `SmartScheduler` prevents CLI "subprocess storms" through prioritized background tasking.
+- 📱 **QR Bridge Auth** — High-performance QR terminal bridge for seamless WSL-to-Host cloud SSO authentication.
+- 🛡️ **Decision-Based Sentry** — Notification hub for background tab errors with immediate switch-attention modals.
+- 📦 **Specialized Lifecycle** — Provider-specific resource actions (e.g., Azure Deallocate, AWS Stop) natively integrated.
 - ⚡ **Fast startup** — Lazy-loaded provider modules mean zero cost for unused features.
 - 🔌 **Plugin-ready** — Register custom providers with `register_provider()`.
 
@@ -190,12 +190,12 @@ python -m build
 | Phase | Name | Status |
 |-------|------|--------|
 | 1-6 | Foundation → Networking & IAM | ✅ Done |
-| 7 | Dashboard 2.0 | ✅ Done |
-| 8 | Azure Integration | 🔜 Planned |
-| 9 | GCP Integration | 🔜 Planned |
-| 10 | Reports & Alerting | 🔜 Planned |
+| 7 | **Multi-Kernel OS Core** | ✅ Done |
+| 8 | **Azure Specialization** | ✅ Done |
+| 9 | GCP High-Kernel Integration | 🔜 In Progress |
+| 10 | Global Decision Reports | 🔜 Planned |
 | 11 | Testing & CI/CD | ✅ Done |
-| 12 | Performance & Polish | 🔜 Planned |
+| 12 | Performance & Polish | ✅ Done |
 | 13 | Packaging & Distribution | ✅ Done |
 
 **Upcoming features:**

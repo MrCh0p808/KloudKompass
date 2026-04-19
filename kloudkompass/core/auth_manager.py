@@ -7,20 +7,110 @@ import subprocess
 import json
 import os
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
+from dataclasses import dataclass
 
 from kloudkompass.utils.logger import error, debug
 
-def get_login_command(provider: str) -> Optional[str]:
-    """Returns the native interactive command used to authenticate the provider."""
+@dataclass
+class LoginOption:
+    """Represents a structured choice for authenticating with a cloud provider."""
+    id: str
+    name: str
+    command: str
+    description: str
+    guide: List[str]
+    is_recommended: bool = False
+
+def get_login_options(provider: str) -> List[LoginOption]:
+    """Returns all available login methods for a specific provider."""
     provider = provider.lower()
+    options = []
+    
     if provider == "aws":
-        return "aws configure sso"
+        options.append(LoginOption(
+            id="aws_sso",
+            name="AWS IAM Identity Center (SSO)",
+            command="aws configure sso",
+            description="Corporate login with browser-based authentication. Most secure.",
+            guide=[
+                "💡 AWS SSO Setup Guide:",
+                " - Start URL: Found in IAM Identity Center Dashboard (AWS Portal URL).",
+                " - Session Name: A local nickname (e.g., 'work').",
+                " - Region: The home region of your SSO portal (e.g., us-east-1)."
+            ],
+            is_recommended=True
+        ))
+        options.append(LoginOption(
+            id="aws_keys",
+            name="AWS Access Keys (Legacy)",
+            command="aws configure",
+            description="Manual input of Access Key ID and Secret Access Key.",
+            guide=[
+                "💡 AWS Access Keys Guide:",
+                " - Access Key ID: Found in IAM > Users > Security Credentials.",
+                " - Secret Key: Only visible when the key is first created.",
+                " - Default Region: Your primary deployment region (e.g., us-west-2)."
+            ]
+        ))
+        
     elif provider == "azure":
-        return "az login"
+        options.append(LoginOption(
+            id="az_standard",
+            name="Standard Browser Login",
+            command="az login",
+            description="Launches a browser window for a standard Microsoft sign-in.",
+            guide=[
+                "💡 Azure Browser Login:",
+                " - Success: Return here ONLY after 'Login successful' appears in browser.",
+                " - Tenants: If you have many, run 'az account set' after this flow."
+            ],
+            is_recommended=True
+        ))
+        options.append(LoginOption(
+            id="az_device",
+            name="Device Code Login",
+            command="az login --use-device-code",
+            description="Use for servers or environments where an auto-browser can't open.",
+            guide=[
+                "💡 Azure Device Code Flow:",
+                " - Code: Copy the code shown in the terminal.",
+                " - Link: Go to https://microsoft.com/devicelogin on any device.",
+                " - Entry: Paste the code there to complete authentication."
+            ]
+        ))
+
     elif provider == "gcp":
-        return "gcloud auth login"
-    return None
+        options.append(LoginOption(
+            id="gcp_standard",
+            name="Standard Browser Login",
+            command="gcloud auth login",
+            description="Google-standard OAuth2 login flow in your web browser.",
+            guide=[
+                "💡 GCP Auth Guide:",
+                " - Account: Select the Google account you use for projects.",
+                " - Authorization: Grant the CLI permissions when prompted."
+            ],
+            is_recommended=True
+        ))
+    
+    return options
+
+def get_login_command(provider: str) -> Optional[str]:
+    """Fallback for backward compatibility. Returns the recommended command."""
+    options = get_login_options(provider)
+    for opt in options:
+        if opt.is_recommended:
+            return opt.command
+    return options[0].command if options else None
+
+def get_terminal_guide(provider: str) -> List[str]:
+    """Fallback for backward compatibility. Returns the recommended guide."""
+    options = get_login_options(provider)
+    for opt in options:
+        if opt.is_recommended:
+            return opt.guide
+    return options[0].guide if options else []
 
 def discover_aws_profiles() -> List[str]:
     """

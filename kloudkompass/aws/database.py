@@ -45,6 +45,15 @@ class AWSDatabaseProvider(DatabaseProvider):
                 suggestion="Run 'aws configure' or check your ~/.aws/credentials"
             )
 
+    def get_manifest(self) -> Dict[str, Any]:
+        """Return the module manifest for the Adaptive Sidebar."""
+        return {
+            "database": {
+                "label": "Databases (RDS)",
+                "icon": "🗄️"
+            }
+        }
+
     def list_db_instances(
         self,
         region: Optional[str] = None,

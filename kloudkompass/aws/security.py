@@ -18,8 +18,38 @@ class AWSSecurityProvider(SecurityProvider):
     AWS security checks provider.
     """
     
-    provider_name = "AWS"
+    provider_name = "aws"
     cli_command = "aws"
+
+    def is_available(self) -> bool:
+        import shutil
+        return shutil.which("aws") is not None
+
+    def validate_credentials(self) -> bool:
+        from kloudkompass.core.health import check_aws_credentials
+        is_valid, _ = check_aws_credentials()
+        return is_valid
+
+    def _ensure_ready(self) -> None:
+        if not self.is_available():
+            raise KloudKompassError(
+                "AWS CLI is not installed or not in PATH.",
+                suggestion="Install it: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html"
+            )
+        if not self.validate_credentials():
+            raise KloudKompassError(
+                "AWS credentials are not configured or have expired.",
+                suggestion="Run 'aws configure' or check your ~/.aws/credentials"
+            )
+
+    def get_manifest(self) -> Dict[str, Any]:
+        """Return the module manifest for the Adaptive Sidebar."""
+        return {
+            "security": {
+                "label": "Security Center",
+                "icon": "🛡️"
+            }
+        }
     
     def check_public_buckets(
         self,

@@ -6,11 +6,11 @@
 # ActiveAlerts widget to show critical findings across the platform.
 
 from textual.app import ComposeResult
-from textual.containers import VerticalScroll
+from textual.containers import VerticalScroll, Container
 from textual.widgets import Static
 
 
-class ActiveAlerts(Static):
+class ActiveAlerts(Container):
     """
     Displays active alert banners for failed health checks or critical security findings.
     """

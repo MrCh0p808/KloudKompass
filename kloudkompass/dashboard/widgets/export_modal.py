@@ -134,6 +134,10 @@ class ExportModal(ModalScreen[Optional[str]]):
             else:
                 self._write_markdown(export_path)
             
+            # L3 FIX: Restrict permissions on exports (cost data is sensitive)
+            import os
+            os.chmod(export_path, 0o600)
+            
             self.dismiss(str(export_path))
         except Exception as e:
             self.app.notify(f"Export failed: {e}", severity="error")

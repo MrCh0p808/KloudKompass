@@ -73,7 +73,8 @@ def save_config(config: Dict[str, Any]) -> None:
     """
     Save configuration to file.
     
-    Writes the config in TOML format for human readability.
+    M1 FIX: Uses atomic writes via tempfile + os.replace to prevent
+    concurrent tab writes from corrupting the config file.
     """
     if toml is None:
         raise ConfigurationError(
@@ -81,15 +82,29 @@ def save_config(config: Dict[str, Any]) -> None:
             config_path=str(CONFIG_FILE)
         )
     
+    import tempfile
+    
     try:
         ensure_config_dir()
-        with open(CONFIG_FILE, 'w') as f:
-            toml.dump(config, f)
+        # Write to a temp file first, then atomically replace
+        fd, temp_path = tempfile.mkstemp(
+            dir=CONFIG_DIR, prefix=".config_tmp_", suffix=".toml"
+        )
+        try:
+            with os.fdopen(fd, 'w') as f:
+                toml.dump(config, f)
+            os.replace(temp_path, CONFIG_FILE)
+        except Exception:
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+            raise
     except PermissionError:
         raise ConfigurationError(
             f"Permission denied writing to {CONFIG_FILE}",
             config_path=str(CONFIG_FILE)
         )
+    except ConfigurationError:
+        raise
     except Exception as e:
         raise ConfigurationError(
             f"Failed to save config: {e}",

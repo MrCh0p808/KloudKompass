@@ -44,7 +44,7 @@ class CostChart(Static):
     """
 
     # Unicode blocks from 1/8 to full block
-    BLOCKS = [" ", " ", "▂", "▃", "▄", "▅", "▆", "▇", "█"]
+    BLOCKS = [" ", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"]  # L1 FIX: was duplicate space at [1]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

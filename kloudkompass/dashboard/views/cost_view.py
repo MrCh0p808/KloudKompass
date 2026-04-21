@@ -152,23 +152,24 @@ class CostView(Container):
                     self.current_search = saved
                     self.query_one("#cost_search_input", Input).value = saved
 
-            self.call_from_thread(self._render_results)
-            self.call_from_thread(status_bar.set_status, f"{provider.upper()} costs loaded")
+            # H4 FIX: After await, we're back on the main thread — call directly
+            self._render_results()
+            status_bar.set_status(f"{provider.upper()} costs loaded")
             
         except KloudKompassError as e:
-            self.call_from_thread(cost_table.clear_records)
+            cost_table.clear_records()
             try:
-                self.call_from_thread(self.query_one("#cost_chart", CostChart).clear_data)
+                cost_chart.clear_data()
             except Exception: pass
-            self.call_from_thread(status_bar.set_status, f"Error: {e}")
+            status_bar.set_status(f"Error: {e}")
         except Exception as e:
-            self.call_from_thread(cost_table.clear_records)
+            cost_table.clear_records()
             try:
-                self.call_from_thread(self.query_one("#cost_chart", CostChart).clear_data)
+                cost_chart.clear_data()
             except Exception: pass
-            self.call_from_thread(status_bar.set_status, f"Unexpected error: {e}")
+            status_bar.set_status(f"Unexpected error: {e}")
         finally:
-            self.call_from_thread(setattr, cost_table, "loading", False)
+            cost_table.loading = False
             
     def _render_results(self) -> None:
         """Render the filtered records to table and chart."""
@@ -184,7 +185,8 @@ class CostView(Container):
 
         filtered = []
         for r in self.all_records:
-            search_str = f"{r.service} {r.period} {r.resource_id or ''}".lower()
+            # M2 FIX: CostRecord has 'name' not 'service', and no 'resource_id'
+            search_str = f"{r.name} {r.period}".lower()
             if self.current_search:
                 try:
                     if not re.search(self.current_search, search_str): continue
@@ -205,4 +207,27 @@ class CostView(Container):
             cost_chart.load_data(chart_data)
         else:
             cost_chart.clear_data()
+
+    def get_export_data(self) -> dict:
+        """Return filtered records for export."""
+        # Find filtered records (we can re-run the filter logic or store it)
+        # For simplicity and to ensure sync with current view, we'll re-filter
+        filtered = []
+        for r in getattr(self, "all_records", []):
+            search_str = f"{r.name} {r.period}".lower()
+            if self.current_search:
+                try:
+                    if not re.search(self.current_search, search_str): continue
+                except re.error:
+                    if self.current_search not in search_str: continue
+            filtered.append(r)
+            
+        rows = []
+        for r in filtered:
+            rows.append([r.name, f"{r.amount:.2f}", r.unit, r.period])
+            
+        return {
+            "headers": ["Name", "Amount", "Unit", "Period"],
+            "rows": rows
+        }
 

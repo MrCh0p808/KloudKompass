@@ -149,7 +149,7 @@ def cached(key_prefix: str, max_age_seconds: int = 300):
             kwarg_hash = ""
             if safe_kwargs:
                 kwarg_str = json.dumps(safe_kwargs, sort_keys=True)
-                kwarg_hash = "_" + hashlib.md5(kwarg_str.encode()).hexdigest()[0:8]
+                kwarg_hash = "_" + hashlib.sha256(kwarg_str.encode()).hexdigest()[:8]  # L2 FIX
                 
             cache_key = f"{key_prefix}_{profile}_{region}{kwarg_hash}"
             

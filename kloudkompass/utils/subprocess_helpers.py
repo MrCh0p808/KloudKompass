@@ -113,7 +113,7 @@ def run_cli_json(
         from kloudkompass.config_manager import get_config_value
         ttl = get_config_value("cache_ttl_seconds", 300)
         
-        cache_key = "cli_" + hashlib.md5(cmd_raw.encode()).hexdigest()
+        cache_key = "cli_" + hashlib.sha256(cmd_raw.encode()).hexdigest()[:16]  # L2 FIX: sha256 over md5
         cached_data = get_cache(cache_key, max_age_seconds=ttl)
         if cached_data is not None:
             return cached_data

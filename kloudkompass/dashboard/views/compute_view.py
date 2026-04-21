@@ -725,3 +725,32 @@ class ComputeView(Container):
         
         status.update(f"Showing {len(filtered)}/{len(self.all_instances)} records")
 
+    def get_export_data(self) -> dict:
+        """Return table data for export."""
+        # Use filtered data if no specific selection, or just the selections
+        instances = []
+        if self.selected_instances:
+            instances = [i for i in self.all_instances if i.instance_id in self.selected_instances]
+        else:
+            # Re-run same filter logic as render_table for export consistency
+            for inst in self.all_instances:
+                if self.state_filter and inst.state != self.state_filter:
+                    continue
+                if self.current_search:
+                    search_payload = f"{inst.instance_id} {inst.name} {inst.instance_type} {inst.state} {inst.public_ip} {inst.region}".lower()
+                    if self.current_search.lower() not in search_payload:
+                        continue
+                instances.append(inst)
+
+        rows = []
+        for inst in instances:
+            rows.append([
+                inst.instance_id, inst.name, inst.instance_type,
+                inst.state, inst.public_ip or "—", inst.region or "—"
+            ])
+
+        return {
+            "headers": ["Instance ID", "Name", "Type", "State", "Public IP", "Region"],
+            "rows": rows
+        }
+

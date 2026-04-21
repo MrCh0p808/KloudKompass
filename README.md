@@ -190,12 +190,12 @@ python -m build
 | Phase | Name | Status |
 |-------|------|--------|
 | 1-6 | Foundation → Networking & IAM | ✅ Done |
-| 7 | **Multi-Kernel OS Core** | ✅ Done |
+| 7 | **Multi-Kernel OS Core** | ✅ Stabilized |
 | 8 | **Azure Specialization** | ✅ Done |
 | 9 | GCP High-Kernel Integration | 🔜 In Progress |
 | 10 | Global Decision Reports | 🔜 Planned |
 | 11 | Testing & CI/CD | ✅ Done |
-| 12 | Performance & Polish | ✅ Done |
+| 12 | Performance & Polish | ✅ Stabilized |
 | 13 | Packaging & Distribution | ✅ Done |
 
 **Upcoming features:**

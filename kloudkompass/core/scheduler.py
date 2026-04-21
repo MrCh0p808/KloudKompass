@@ -24,15 +24,23 @@ class SmartScheduler:
     def __init__(self, concurrency_limit: int = 2):
         if self._initialized:
             return
-        self.queue: asyncio.Queue = asyncio.Queue()
+        self.queue: asyncio.Queue = None  # H1 FIX: created in start() on the running loop
         self.concurrency_limit = concurrency_limit
         self._workers: List[asyncio.Task] = []
         self._initialized = True
+
+    @classmethod
+    def _reset(cls):
+        """H5 FIX: Reset singleton for testing."""
+        cls._instance = None
 
     async def start(self):
         """Start background workers to process the queue."""
         if self._workers:
             return
+        # H1 FIX: Create queue on the RUNNING event loop
+        if self.queue is None:
+            self.queue = asyncio.Queue()
             
         debug(f"Starting SmartScheduler with concurrency limit: {self.concurrency_limit}")
         for _ in range(self.concurrency_limit):

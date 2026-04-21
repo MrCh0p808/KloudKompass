@@ -60,6 +60,11 @@ class WorkspaceRegistry:
         self._load_from_config()
         self._initialized = True
 
+    @classmethod
+    def _reset(cls):
+        """H5 FIX: Reset singleton for testing."""
+        cls._instance = None
+
     def _load_from_config(self) -> None:
         """Load persisted workspaces from config.toml."""
         saved_data = get_config_value("workspaces", [])

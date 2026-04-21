@@ -22,6 +22,8 @@ from kloudkompass.tui.screens import BRAND_TITLE, BRAND_SHORT, BRAND_BANNER
 from kloudkompass.dashboard.widgets.workspace_shell import Workspace
 from kloudkompass.dashboard.widgets.notification_center import SystemAttentionModal
 from kloudkompass.core.workspace_registry import WorkspaceRegistry, WorkspaceContext
+from kloudkompass.core.auth_manager import get_login_options
+from kloudkompass.tui.onboarding.wizard import AuthModal
 
 
 class KloudKompassApp(App):
@@ -35,6 +37,12 @@ class KloudKompassApp(App):
     ENABLE_COMMAND_PALETTE = True
 
     CSS = """
+    Screen {
+        height: 100vh;
+        width: 100vw;
+        background: $background;
+    }
+
     .guide-item {
         margin-bottom: 0;
     }
@@ -46,6 +54,12 @@ class KloudKompassApp(App):
     
     TabbedContent {
         height: 1fr;
+    }
+    
+    TabbedContent TabPane {
+        height: 100%;
+        layout: vertical;
+        padding: 0;
     }
     
     #app_banner {
@@ -105,9 +119,8 @@ class KloudKompassApp(App):
         """
         Discover identities, check health, and mount active workspace kernels.
         """
-        from kloudkompass.tui.onboarding.wizard import DependencyModal, AuthModal, WorkspaceModal
+        from kloudkompass.tui.onboarding.wizard import DependencyModal, WorkspaceModal
         from kloudkompass.core.health import check_credentials
-        from kloudkompass.core.auth_manager import get_login_options
         
         # 1. Discover all identities on the system
         discovered = self.registry.discover_all()
@@ -154,6 +167,7 @@ class KloudKompassApp(App):
     async def execute_interactive_command(self, cmd: str, guide: list[str] = None) -> None:
         """Suspend the app, run a native shell command, and resume."""
         import subprocess
+        import shlex  # C3 FIX: safe command splitting
         with self.suspend():
             print("\033[2J\033[H") # Clear terminal
             print("=" * 80)
@@ -164,7 +178,8 @@ class KloudKompassApp(App):
                 print("-" * 80)
             print(f"\n[Executing...] {cmd}\n")
             
-            subprocess.run(cmd, shell=True)
+            # C3 FIX: shell=False prevents command injection via semicolons/pipes
+            subprocess.run(shlex.split(cmd))
             
             print("\n" + "=" * 80)
             print(" [DONE] Process finished. Press Enter to return to Dashboard UI...")

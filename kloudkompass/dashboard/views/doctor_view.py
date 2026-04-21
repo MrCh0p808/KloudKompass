@@ -106,22 +106,22 @@ class DoctorView(Container):
             # Use asyncio.to_thread to prevent blocking the UI
             self.all_results = await asyncio.to_thread(run_doctor)
             
-            # Save search to config logic might not be needed here, or we can just render
-            self.call_from_thread(self._render_doctor)
+            # H3 FIX: After await, we're back on the main thread — call directly
+            self._render_doctor()
 
             passed = sum(1 for _, _, p in self.all_results if p)
             failed = len(self.all_results) - passed
 
             if failed == 0:
-                self.call_from_thread(status.update, f"All {passed} checks passed ✓")
+                status.update(f"All {passed} checks passed ✓")
             else:
-                self.call_from_thread(status.update, f"{passed} passed, {failed} failed")
+                status.update(f"{passed} passed, {failed} failed")
 
         except Exception as e:
-            self.call_from_thread(status.update, f"Doctor error: {e}")
+            status.update(f"Doctor error: {e}")
             
         finally:
-            self.call_from_thread(setattr, table, "loading", False)
+            table.loading = False
 
     def _render_doctor(self) -> None:
         table = self.query_one("#doctor_table", DataTable)
@@ -135,3 +135,18 @@ class DoctorView(Container):
                     
             icon = "✅" if is_pass else "❌"
             table.add_row(icon, check_name, detail)
+
+    def get_export_data(self) -> dict:
+        """Return table data for export."""
+        rows = []
+        for check_name, detail, is_pass in getattr(self, "all_results", []):
+            status = "PASS" if is_pass else "FAIL"
+            # Apply search filter if active
+            search_str = f"{check_name} {detail}".lower()
+            if self.current_search and self.current_search not in search_str:
+                continue
+            rows.append([status, check_name, detail])
+        return {
+            "headers": ["Status", "Check", "Details"],
+            "rows": rows
+        }

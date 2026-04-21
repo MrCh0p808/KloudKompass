@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-04-20
+
+### Fixed (Project Stabilization Audit - 17 Items)
+- **Thread Safety**: Refactored `Workspace` background discovery to avoid unsafe `post_message` calls from secondary threads.
+- **Security Hardening**:
+    *   Replaced `shell=True` subprocess calls with `shlex.split` to prevent command injection.
+    *   Migrated cache keys from `MD5` to `SHA256` for enterprise compliance.
+    *   Enforced `0o600` permissions on all exported data files.
+- **Architectural Stability**:
+    *   Implemented lazy initialization for `asyncio.Queue` in `SmartScheduler` to ensure correct event loop binding.
+    *   Fixed reactive state bleeding in `Workspace` by using factory functions for mutable defaults.
+    *   Implemented atomic writes in `config_manager` using `tempfile` + `os.replace`.
+- **UI/UX Resilience**:
+    *   Added `LoadingIndicator` with spinning animation to discovery screen.
+    *   Stabilized global layout with `100vh` and `100%` height constraints to prevent squashing in WSL.
+    *   Fixed sparkline resolution by removing duplicate characters in `cost_chart.py`.
+- **Feature Completion**:
+    *   Implemented missing `get_export_data` hooks for `ComputeView`, `CostView`, and `DoctorView`.
+    *   Exposed `_current_data` property in `Workspace` for unified export support.
+
 ## [0.1.0] - 2026-04-18
 
 ### Added
